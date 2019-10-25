@@ -9,7 +9,7 @@ export brent
 include("smooth.jl")
 export abs_smooth
 
-include("interplate.jl")
+include("interpolate.jl")
 export akima_setup
 export akima_interp
 export akima
