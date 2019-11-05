@@ -21,11 +21,12 @@
 function brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
 
     xpre = a; xcur = b
-    xblk = 0.0; fblk = 0.0; spre = 0.0; scur = 0.0
+    # xblk = 0.0; fblk = 0.0; spre = 0.0; scur = 0.0
     error_num = "INPROGRESS"
 
     fpre = f(xpre, args...)
     fcur = f(xcur, args...)
+    xblk = zero(fpre); fblk = zero(fpre); spre = zero(fpre); scur = zero(fpre)
     funcalls = 2
     iterations = 0
     
@@ -33,11 +34,11 @@ function brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_out
         error_num = "SIGNERR"
         return _pack_brent_results(0.0, iterations, funcalls, error_num, full_output)
     end
-    if fpre == 0
+    if fpre == zero(fpre)
         error_num = "CONVERGED"
         return _pack_brent_results(xpre, iterations, funcalls, error_num, full_output)
     end
-    if fcur == 0
+    if fcur == zero(fcur)
         error_num = "CONVERGED"
         return _pack_brent_results(xcur, iterations, funcalls, error_num, full_output)
     end
@@ -61,7 +62,7 @@ function brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_out
 
         delta = (xtol + rtol*abs(xcur))/2
         sbis = (xblk - xcur)/2
-        if fcur == 0 || abs(sbis) < delta
+        if fcur == zero(fcur) || abs(sbis) < delta
             error_num = "CONVERGED"
             return _pack_brent_results(xcur, iterations, funcalls, error_num, full_output) 
         end
