@@ -3,6 +3,8 @@ Interpolation Methods
 
 =#
 
+using OffsetArrays: OffsetVector
+
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
@@ -94,7 +96,7 @@ function akima_interp(x, spline)
    
     # interpolate at each point
     n = length(x)
-    y = zeros(n)
+    y = zeros(eltype(x), n)
 
     for i = 1:n
 
