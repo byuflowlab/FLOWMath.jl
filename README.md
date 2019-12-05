@@ -58,7 +58,7 @@ ypt2 = akima_interp(xpt2, spline)
 The functions `interp2d`, `interp3d`, and `interp4d` are generic and will accept any method that performs 1D interpolation as the first argument.  In the below examples, akima is used.  These examples are based off of examples from Matlab's interpn documentation.
 
 2D:
-```
+```julia
 x = -5.0:5.0
 y = -5.0:5.0
 z = zeros(11, 11)
@@ -77,7 +77,7 @@ zpt = interp2d(akima, x, y, z, xpt, ypt)
 ```
 
 4D:
-```
+```julia
 x = -1:0.2:1
 y = -1:0.2:1
 z = -1:0.2:1
@@ -110,7 +110,7 @@ fpt = interp4d(akima, x, y, z, t, f, xpt, ypt, zpt, tpt)
 
 ## Derivate Estimation
 
-We highly recommend using algorithmic differentiation (AD) and analytic sensitivity methods.  The below methods are useful for quick and dirty prototyping and/or to check derivatives (particularly w/ complex step).
+We highly recommend using algorithmic differentiation (AD) and analytic sensitivity methods.  The below methods provide quick and dirty Jacobians for prototyping and/or to check derivatives (particularly w/ complex step).
 
 ```julia
 # 2 inputs, 3 outputs

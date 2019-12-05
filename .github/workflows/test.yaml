@@ -1,6 +1,8 @@
 name: Run tests
 
 on: [push, pull_request]
+  paths:
+  - '**.jl'
 
 jobs:
   test:
