@@ -1,9 +1,10 @@
 name: Run tests
 
-on: [push, pull_request]
+on:
   push:
     paths:
     - '**.jl'
+  pull_request:
 
 
 jobs:
