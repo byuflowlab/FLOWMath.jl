@@ -9,7 +9,7 @@ jobs:
       matrix:
         julia-version: [stable, lts]
         julia-arch: [x64, x86]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest]
         exclude:
           - os: macOS-latest
             julia-arch: x86
