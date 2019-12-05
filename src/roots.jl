@@ -4,7 +4,7 @@
 
 
 """
-    brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
+    brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
 
 1D root finding using Brent's method.  Based off the brentq implementation in scipy.
 
@@ -12,13 +12,13 @@
 - `f`: scalar function, that optionally takes additional arguments
 - `a`::Float, `b::Float`: bracketing interval for a root - sign changes sign between: (f(a) * f(b) < 0)
 - `args::Tuple`: tuple of additional arguments to pass to f
-- `xtol::Float`: absolute tolerance (positive) for root
+- `atol::Float`: absolute tolerance (positive) for root
 - `rtol::Float`: relative tolerance for root
 - `maxiter::Int`: maximum number of iterations allowed
 - `full_output::Bool`: flag to indicate whether you want just the root, or the root with a 
     second argument (tuple) containing the number of iterations, function calls, and a convergence message.
 """
-function brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
+function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
 
     xpre = a; xcur = b
     # xblk = 0.0; fblk = 0.0; spre = 0.0; scur = 0.0
@@ -60,7 +60,7 @@ function brent(f, a, b; args=(), xtol=2e-12, rtol=4*eps(), maxiter=100, full_out
             fblk = fpre
         end
 
-        delta = (xtol + rtol*abs(xcur))/2
+        delta = (atol + rtol*abs(xcur))/2
         sbis = (xblk - xcur)/2
         if fcur == zero(fcur) || abs(sbis) < delta
             error_num = "CONVERGED"
