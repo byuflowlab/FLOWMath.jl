@@ -16,7 +16,7 @@ y = sin.(x)
 z = trapz(x, y)
 @test isapprox(z, 1.999835503887444, atol=1e-15)
 
-# -------------------------    
+# -------------------------
 
 # ------ Brent's method ------
 
@@ -84,6 +84,30 @@ y = abs_smooth(x, delta_x)
 @test y == 0.0625
 # -------------------------
 
+# ------ ks ---------
+x = [0.0, 0.0]
+hardness = 1.0
+x_max_smooth = ks(x, hardness)
+@test isapprox(x_max_smooth, 0.6931471805599453)
+
+# overflow
+x = [1e6, 1e6]
+hardness = 1.0
+x_max_smooth = ks(x, hardness)
+@test isapprox(x_max_smooth, 1.0000006931471806e6)
+
+# underflow
+x = [-1e6, -1e6]
+hardness = 1.0
+x_max_smooth = ks(x, hardness)
+@test isapprox(x_max_smooth, -999999.3068528194)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 10.0
+x_max_smooth = ks(x, hardness)
+@test isapprox(x_max_smooth, 0.06931471805599453)
+# -------------------------
 
 # ------- forward/backwards/central/complex diff ----------
 
