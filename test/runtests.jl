@@ -11,7 +11,7 @@ y = [1 4 9 16 25]
 z = trapz(x, y)
 @test z == 42.0
 
-x = range(0.0, pi+1e-15, step=pi/100)
+x = range(0.0, stop=pi+1e-15, step=pi/100)
 y = sin.(x)
 z = trapz(x, y)
 @test isapprox(z, 1.999835503887444, atol=1e-15)
