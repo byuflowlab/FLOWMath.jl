@@ -132,3 +132,13 @@ The absolute value function is not differentiable at x = 0.  The below function 
 ```julia
 y = abs_smooth(x, delta_x)
 ```
+
+### Kreisselmeier-Steinhauser Constraint Aggregation Function
+
+The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradient-based optimization problems to smoothly aggregate an arbitrary number of constraints into a single constraint.  It may also be used as a smooth approximation of the maximum function.  A salient feature of this function is that it is guaranteed to overestimate the maximum function, which can be used to ensure that the resulting constraint is conservative.  The below function provides the parameter `hardness` in order to tune the hardness of the resulting function.  As `hardness` increases the function more and more closely approximates the maximum function.
+
+```julia
+x = [1.2, 0.0, 0.5]
+hardness = 100
+y = ks(x, hardness)
+```
