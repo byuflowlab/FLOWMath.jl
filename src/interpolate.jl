@@ -101,7 +101,7 @@ function akima_interp(x, spline)
     for i = 1:n
 
         j = findlast(x[i] .>= spline.xdata[1:end-1])
-        if isnothing(j)
+        if j === nothing
             j = 1
         end
 

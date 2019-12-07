@@ -8,6 +8,7 @@ export brent
 
 include("smooth.jl")
 export abs_smooth
+export ksmax, ksmin
 
 include("interpolate.jl")
 export akima_setup

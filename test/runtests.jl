@@ -11,12 +11,12 @@ y = [1 4 9 16 25]
 z = trapz(x, y)
 @test z == 42.0
 
-x = range(0.0, pi+1e-15, step=pi/100)
+x = range(0.0, stop=pi+1e-15, step=pi/100)
 y = sin.(x)
 z = trapz(x, y)
 @test isapprox(z, 1.999835503887444, atol=1e-15)
 
-# -------------------------    
+# -------------------------
 
 # ------ Brent's method ------
 
@@ -84,6 +84,49 @@ y = abs_smooth(x, delta_x)
 @test y == 0.0625
 # -------------------------
 
+# ------ ksmax ---------
+x = [0.0, 0.0]
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, 0.013862943611198907)
+
+# overflow
+x = [1e6, 1e6]
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, 1.0000000138629436e6)
+
+# underflow
+x = [-1e6, -1e6]
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, -999999.9861370564)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 100.0
+x_max_smooth = ksmax(x, hardness)
+@test isapprox(x_max_smooth, 0.006931471805599453)
+
+# ------ ksmin ---------
+x = [0.0, 0.0]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, -0.013862943611198907)
+
+# overflow
+x = [1e6, 1e6]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, 999999.9861370564)
+
+# underflow
+x = [-1e6, -1e6]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, -1.0000000138629436e6)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 100.0
+x_max_smooth = ksmin(x, hardness)
+@test isapprox(x_max_smooth, -0.006931471805599453)
+
+# -------------------------
 
 # ------- forward/backwards/central/complex diff ----------
 
