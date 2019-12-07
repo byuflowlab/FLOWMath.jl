@@ -19,15 +19,24 @@ function abs_smooth(x, delta_x)
 end
 
 """
-    ks(x, hardness)
+    ksmax(x, hardness=50)
 
 Kreisselmeier–Steinhauser constraint aggregation function.  In the limit as `hardness`
 goes to infinity the maximum function is returned. Is mathematically guaranteed to
-overestimate the maximum function, i.e. `maximum(x) <= ks(x, hardness)`.
+overestimate the maximum function, i.e. `maximum(x) <= ksmax(x, hardness)`.
 """
-function ks(x, hardness)
+function ksmax(x, hardness=50)
     k = maximum(x)
     return 1.0/hardness*log(sum(exp.(hardness*(x.-k)))) .+ k
 end
+
+"""
+    ksmin(x, hardness=50)
+
+Kreisselmeier–Steinhauser constraint aggregation function.  In the limit as `hardness`
+goes to infinity the minimum function is returned. Is mathematically guaranteed to
+underestimate the minimum function, i.e. `minimum(x) <= ksmin(x, hardness)`.
+"""
+ksmin(x, hardness=50) = -ksmax(-x, hardness)
 
 # TODO AN: add smooth max/min with cubic splines

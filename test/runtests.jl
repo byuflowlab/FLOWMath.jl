@@ -84,29 +84,48 @@ y = abs_smooth(x, delta_x)
 @test y == 0.0625
 # -------------------------
 
-# ------ ks ---------
+# ------ ksmax ---------
 x = [0.0, 0.0]
-hardness = 1.0
-x_max_smooth = ks(x, hardness)
-@test isapprox(x_max_smooth, 0.6931471805599453)
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, 0.013862943611198907)
 
 # overflow
 x = [1e6, 1e6]
-hardness = 1.0
-x_max_smooth = ks(x, hardness)
-@test isapprox(x_max_smooth, 1.0000006931471806e6)
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, 1.0000000138629436e6)
 
 # underflow
 x = [-1e6, -1e6]
-hardness = 1.0
-x_max_smooth = ks(x, hardness)
-@test isapprox(x_max_smooth, -999999.3068528194)
+x_max_smooth = ksmax(x)
+@test isapprox(x_max_smooth, -999999.9861370564)
 
 # hardness
 x = [0.0, 0.0]
-hardness = 10.0
-x_max_smooth = ks(x, hardness)
-@test isapprox(x_max_smooth, 0.06931471805599453)
+hardness = 100.0
+x_max_smooth = ksmax(x, hardness)
+@test isapprox(x_max_smooth, 0.006931471805599453)
+
+# ------ ksmin ---------
+x = [0.0, 0.0]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, -0.013862943611198907)
+
+# overflow
+x = [1e6, 1e6]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, 999999.9861370564)
+
+# underflow
+x = [-1e6, -1e6]
+x_max_smooth = ksmin(x)
+@test isapprox(x_max_smooth, -1.0000000138629436e6)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 100.0
+x_max_smooth = ksmin(x, hardness)
+@test isapprox(x_max_smooth, -0.006931471805599453)
+
 # -------------------------
 
 # ------- forward/backwards/central/complex diff ----------

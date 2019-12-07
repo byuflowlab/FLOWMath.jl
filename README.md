@@ -135,10 +135,13 @@ y = abs_smooth(x, delta_x)
 
 ### Kreisselmeier-Steinhauser Constraint Aggregation Function
 
-The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradient-based optimization problems to smoothly aggregate an arbitrary number of constraints into a single constraint.  It may also be used as a smooth approximation of the maximum function.  A salient feature of this function is that it is guaranteed to overestimate the maximum function, which can be used to ensure that the resulting constraint is conservative.  The below function provides the parameter `hardness` in order to tune the hardness of the resulting function.  As `hardness` increases the function more and more closely approximates the maximum function.
+The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradient-based optimization problems to smoothly aggregate an arbitrary number of constraints into a single constraint.  It may also be used as a smooth approximation of the maximum function (or minimum function).  A salient feature of this function is that it is guaranteed to overestimate the maximum function (or underestimate the minimum function).  This feature of the function can be used to ensure that the resulting constraint is conservative.  
+
+We provide two implementations of this function: `ksmax` and `ksmin`.  `ksmax` and `ksmin` may be used to smoothly approximate the maximum and minimum functions, respectively.  Both functions take the optional parameter `hardness` that controls the smoothness of the resulting function.  As `hardness` increases the function more and more closely approximates the maximum (or minimum) function.
 
 ```julia
 x = [1.2, 0.0, 0.5]
 hardness = 100
-y = ks(x, hardness)
+max_x = ksmax(x, hardness)
+min_x = ksmin(x, hardness)
 ```
