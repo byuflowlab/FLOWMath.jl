@@ -39,4 +39,29 @@ underestimate the minimum function, i.e. `minimum(x) <= ksmin(x, hardness)`.
 """
 ksmin(x, hardness=50) = -ksmax(-x, hardness)
 
+"""
+    sigmoid_blend(x)
+
+Blends two functions together using sigmoid function.
+"""
+function sigmoid_blend(f1, f2, x, edge=0.0, hardness=50)
+
+end
+
+"""
+    sigmoid(x)
+
+Sigmoid function, implemented to avoid NaNs
+"""
+function sigmoid(x)
+    if x >= zero(x)
+        z = exp(-x)
+        return one(z) / (one(z) + z)
+    else
+        z = exp(x)
+        return z / (one(z) + z)
+    end
+end
+
+
 # TODO AN: add smooth max/min with cubic splines
