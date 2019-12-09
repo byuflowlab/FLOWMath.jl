@@ -21,7 +21,7 @@ y = sin.(x)
 z = trapz(x, y)
 ```
 
-## Root Finding 
+## Root Finding
 
 ### Brent's Method (1D functions)
 
@@ -144,4 +144,28 @@ x = [1.2, 0.0, 0.5]
 hardness = 100
 max_x = ksmax(x, hardness)
 min_x = ksmin(x, hardness)
+```
+
+### Blending functions using the sigmoid function
+
+The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location (`xt`) and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
+
+```julia
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend(f1x, f2x, x, xt, hardness)
+```
+
+`sigmoid_blend` can also be used with vector inputs using broadcasting.
+
+```julia
+x = -0.25:0.01:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
 ```

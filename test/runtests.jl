@@ -128,6 +128,116 @@ x_max_smooth = ksmin(x, hardness)
 
 # -------------------------
 
+# ------ sigmoid ---------
+x = -0.5
+y = sigmoid(x)
+@test isapprox(y, 0.37754066879814546)
+
+x = 0.0
+y = sigmoid(x)
+@test isapprox(y, 0.5)
+
+x = 0.5
+y = sigmoid(x)
+@test isapprox(y, 0.6224593312018546)
+
+# overflow
+x = 1e6
+y = sigmoid(x)
+@test isapprox(y, 1.0)
+
+# underflow
+x = -1e6
+y = sigmoid(x)
+@test isapprox(y, 0.0)
+
+# -------------------------
+
+# ------ sigmoid_blend ---------
+x = -0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+@test isapprox(y, -0.09926378639832867)
+
+x = 0.0
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+@test isapprox(y, 0.0)
+
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+@test isapprox(y, 0.010602356583185632)
+
+# overflow
+x = 1e6
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+@test isapprox(y, f2x)
+
+# underflow
+x = -1e6
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+@test isapprox(y, f1x)
+
+# hardness
+x = -0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend(f1x, f2x, x, xt, hardness)
+@test isapprox(y, -0.09999500623444274)
+
+x = 0.0
+f1x = x
+f2x = x^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend(f1x, f2x, x, xt, hardness)
+@test isapprox(y, 0.0)
+
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend(f1x, f2x, x, xt, hardness)
+@test isapprox(y, 0.010004085808183225)
+
+# vectorized
+x = -0.25:0.05:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
+ytest = [-0.24999999999566003,
+         -0.19999999950532316,
+         -0.14999994723186585,
+         -0.09999500623444274,
+         -0.04964862532647505,
+          0.0,
+          0.0028179104189035298,
+          0.010004085808183225,
+          0.022500039002533945,
+          0.040000000329784596,
+          0.062500000002604]
+@test isapprox(y, ytest)
+
+# -------------------------
+
 # ------- forward/backwards/central/complex diff ----------
 
 f(x) = @. exp(x) / sqrt(sin(x)^3 + cos(x)^3)

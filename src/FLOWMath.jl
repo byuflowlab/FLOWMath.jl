@@ -9,6 +9,8 @@ export brent
 include("smooth.jl")
 export abs_smooth
 export ksmax, ksmin
+export sigmoid
+export sigmoid_blend
 
 include("interpolate.jl")
 export akima_setup
