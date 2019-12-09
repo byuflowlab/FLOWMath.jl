@@ -148,7 +148,7 @@ min_x = ksmin(x, hardness)
 
 ### Blending functions using the sigmoid function
 
-The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
+The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location (`xt`) and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
 
 ```julia
 x = 0.1
