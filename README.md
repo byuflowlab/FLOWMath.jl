@@ -158,3 +158,14 @@ xt = 0.0
 hardness = 100
 y = sigmoid_blend(f1x, f2x, x, xt, hardness)
 ```
+
+`sigmoid_blend` can also be used with vector inputs using broadcasting.
+
+```julia
+x = -0.25:0.01:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+hardness = 100
+y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
+```
