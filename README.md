@@ -15,10 +15,10 @@ Examples of the available methods are shown below.  More examples are available 
 ### Trapezoidal Integration
 
 ```julia
-x = range(0.0, pi+1e-15, step=pi/100)
-y = sin.(x)
-
-z = trapz(x, y)
+julia> x = range(0.0, pi+1e-15, step=pi/100)
+julia> y = sin.(x)
+julia> z = trapz(x, y)
+1.9998355038874442
 ```
 
 ## Root Finding
@@ -26,9 +26,9 @@ z = trapz(x, y)
 ### Brent's Method (1D functions)
 
 ```julia
-f(x) = x^2 - 1.0
-
-xstar = brent(f, -2.0, 0)
+julia> f(x) = x^2 - 1.0
+julia> xstar = brent(f, -2.0, 0)
+-1.0
 ```
 
 ## Interpolation
