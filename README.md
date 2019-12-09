@@ -145,3 +145,15 @@ hardness = 100
 max_x = ksmax(x, hardness)
 min_x = ksmin(x, hardness)
 ```
+
+### Blending functions using the sigmoid function
+
+The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location and allows the user to specify the sharpness (hardness) of the transition between the two functions.
+
+```julia
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+y = sigmoid_blend(f1x, f2x, x, xt)
+```
