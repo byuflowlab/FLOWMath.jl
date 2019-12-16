@@ -66,4 +66,34 @@ function sigmoid_blend(f1x, f2x, x, xt, hardness=50)
     return f1x + sx*(f2x-f1x)
 end
 
+"""
+    cubic_blend(f1x, f2x, x, xt, delta_x)
+
+Smoothly transitions the results of functions f1 and f2 using a cubic polynomial,
+with the transition between the functions located at `xt`. delta_x is the half
+width of the smoothing interval.  The resulting function is C1 continuous.
+"""
+function cubic_blend(f1x, f2x, x, xt, delta_x)
+    x = max(x, xt-delta_x)
+    x = min(x, xt+delta_x)
+    xp = (x-xt)/(2*delta_x) + 1/2
+    sx = -2*xp^3 + 3*xp^2
+    return f1x + sx*(f2x-f1x)
+end
+
+"""
+    quintic_blend(f1x, f2x, x, xt, delta_x)
+
+Smoothly transitions the results of functions f1 and f2 using a quintic polynomial,
+with the transition between the functions located at `xt`. delta_x is the half
+width of the smoothing interval.  The resulting function is C2 continuous.
+"""
+function quintic_blend(f1x, f2x, x, xt, delta_x)
+    x = max(x, xt-delta_x)
+    x = min(x, xt+delta_x)
+    xp = (x-xt)/(2*delta_x) + 1/2
+    sx = 6*xp^5 - 15*xp^4 + 10*xp^3
+    return f1x + sx*(f2x-f1x)
+end
+
 # TODO AN: add smooth max/min with cubic splines
