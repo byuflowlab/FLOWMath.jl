@@ -40,56 +40,74 @@ underestimate the minimum function, i.e. `minimum(x) <= ksmin(x, hardness)`.
 ksmin(x, hardness=50) = -ksmax(-x, hardness)
 
 """
-    KSAdaptiveHardness(default=50, tol=1e-6, step=1e-3)
-
-Defines inputs for using the Kreisselmeier-Steinhauser constraint aggregation
-function with an adaptive hardness as defined by Poon and Martins in
-"An adaptive approach to constraint aggregation using adjoint sensitivity analysis"
-"""
-@with_kw struct KSAdaptiveHardness{TF}
-    default::TF = 50.0
-    tol::TF = 1e-6
-    step::TF = 1e-3
-end
-
-"""
-    ksmax(x, hardness::KSAdaptiveHardness)
+    ksmax_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
 
 Kreisselmeier–Steinhauser constraint aggregation function using the adaptive
-hardness proposed by Poon and Martins.
+hardness proposed by Poon and Martins in "An adaptive approach to constraint
+aggregation using adjoint sensitivity analysis".  This implementation uses
+Newton's method rather than the secant method for increasing hardness values.
+Some blending is also used to ensure that result is C1 continuous.
+`smoothing_fraction` controls the smoothness of this blending.
 """
-function ksmax(x, hardness::KSAdaptiveHardness)
-    # unpack original hardness and target slope
-    original_hardness = hardness.default # original hardness
-    target_derivative = -hardness.tol # minimum target derivative of ksmax wrt hardness
-    # compute KS function value and derivative
-    original_value = ksmax(x, original_hardness)
-    original_derivative = ksmax_h(x, original_hardness)
-    # return result if it is within the tolerance
-    if original_derivative > target_derivative
-        return original_value
+function ksmax_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+    # check if derivative of the KS function wrt hardness is within the tolerance
+    deriv = ksmax_h(x, hardness)
+    target_deriv = -tol
+    if abs(deriv) > tol * (1-smoothing_fraction)
+        # increase hardness by applying Newton's method once in log-log space
+        dderiv = ksmax_hh(x, hardness)*hardness/deriv
+        new_hardness = 10^(log10(hardness) + log10(target_deriv/deriv)/dderiv)
+        hardness = quintic_blend(hardness, new_hardness, -deriv, -target_deriv, smoothing_fraction*tol)
     end
-    # otherwise compute the derivative of the KS function derivative in the log scale
-    perturbed_hardness = original_hardness + hardness.step
-    perturbed_derivative = ksmax_h(x, perturbed_hardness)
-    tmp = log10(perturbed_derivative/original_derivative)/log10(perturbed_hardness/original_hardness)
-    # and apply newton's method once in the log scale to get the new hardness
-    new_hardness = log10(original_hardness) - log10(target_derivative/original_derivative)/tmp
-    # then take it out of the log scale
-    new_hardness = 10^new_hardness
-    println(new_hardness)
-    # and use the new hardness to compute ksmax
-    return ksmax(x, new_hardness)
+    # use the new hardness to compute ksmax
+    return ksmax(x, hardness)
 end
+
+"""
+    ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+
+Kreisselmeier–Steinhauser constraint aggregation function using the adaptive
+hardness proposed by Poon and Martins in "An adaptive approach to constraint
+aggregation using adjoint sensitivity analysis".  This implementation uses
+Newton's method rather than the secant method for increasing hardness values.
+Some blending is also used to ensure that result is C1 continuous.
+`smoothing_fraction` controls the smoothness of this blending.
+"""
+ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1) =
+    -ksmax_adaptive(-x, hardness, tol=tol, smoothing_fraction=smoothing_fraction)
 
 """
     ksmax_h(x, hardness)
 
+Computes the derivative of the Kreisselmeier–Steinhauser constraint aggregation
+function with respect to `hardness`.
+"""
+function ksmax_h(x, hardness)
+    k = maximum(x)
+    tmp1 = exp.(hardness*(x.-k))
+    tmp2 = sum((x.-k).*tmp1)
+    tmp3 = sum(tmp1)
+    tmp4 = 1.0/hardness*log(tmp3)
+    return 1.0/hardness*(tmp2/tmp3 - tmp4)
+end
 
 """
-function ksmax_h(x, hardness=25)
+    ksmax_hh(x, hardness)
+
+Computes the second derivative of the Kreisselmeier–Steinhauser constraint aggregation
+function with respect to `hardness`.
+"""
+function ksmax_hh(x, hardness)
     k = maximum(x)
-    return 1.0/hardness*(sum((x.-k).*exp.(hardness*(x.-k)))/sum(exp.(hardness*(x.-k))) - 1.0/hardness*log(sum(exp.(hardness*(x.-k)))))
+    tmp1 = exp.(hardness*(x.-k))
+    tmp2 = sum((x.-k).*tmp1)
+    tmp2_h = sum((x.-k).^2 .* tmp1)
+    tmp3 = sum(tmp1)
+    tmp3_h = sum((x.-k).*tmp1)
+    tmp4 = 1.0/hardness*log(tmp3)
+    tmp4_h = 1.0/hardness*(tmp2/tmp3 - tmp4)
+    return -1.0/hardness^2*(tmp2/tmp3 - tmp4) +
+        1.0/hardness*(tmp2_h/tmp3 - tmp2*tmp3_h/tmp3^2 - tmp4_h)
 end
 
 """
@@ -117,6 +135,42 @@ sharpness of the transition between the two functions.
 function sigmoid_blend(f1x, f2x, x, xt, hardness=50)
     sx = sigmoid(hardness*(x-xt))
     return f1x + sx*(f2x-f1x)
+end
+
+"""
+    cubic_blend(f1x, f2x, x, xt, delta_x)
+Smoothly transitions the results of functions f1 and f2 using a cubic polynomial,
+with the transition between the functions located at `xt`. delta_x is the half
+width of the smoothing interval.  The resulting function is C1 continuous.
+"""
+function cubic_blend(f1x, f2x, x, xt, delta_x)
+    if x <= xt - delta_x
+        return f1x
+    elseif x >= xt + delta_x
+        return f2x
+    else
+        xp = (x-xt)/(2*delta_x) + 1/2
+        sx = -2*xp^3 + 3*xp^2
+        return f1x + sx*(f2x-f1x)
+    end
+end
+
+"""
+    quintic_blend(f1x, f2x, x, xt, delta_x)
+Smoothly transitions the results of functions f1 and f2 using a quintic polynomial,
+with the transition between the functions located at `xt`. delta_x is the half
+width of the smoothing interval.  The resulting function is C2 continuous.
+"""
+function quintic_blend(f1x, f2x, x, xt, delta_x)
+    if x <= xt - delta_x
+        return f1x
+    elseif x >= xt + delta_x
+        return f2x
+    else
+        xp = (x-xt)/(2*delta_x) + 1/2
+        sx = 6*xp^5 - 15*xp^4 + 10*xp^3
+        return f1x + sx*(f2x-f1x)
+    end
 end
 
 # TODO AN: add smooth max/min with cubic splines
