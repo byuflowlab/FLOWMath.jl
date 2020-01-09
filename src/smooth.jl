@@ -40,6 +40,59 @@ underestimate the minimum function, i.e. `minimum(x) <= ksmin(x, hardness)`.
 ksmin(x, hardness=50) = -ksmax(-x, hardness)
 
 """
+    KSAdaptiveHardness(default=50, tol=1e-6, step=1e-3)
+
+Defines inputs for using the Kreisselmeier-Steinhauser constraint aggregation
+function with an adaptive hardness as defined by Poon and Martins in
+"An adaptive approach to constraint aggregation using adjoint sensitivity analysis"
+"""
+@with_kw struct KSAdaptiveHardness{TF}
+    default::TF = 50.0
+    tol::TF = 1e-6
+    step::TF = 1e-3
+end
+
+"""
+    ksmax(x, hardness::KSAdaptiveHardness)
+
+Kreisselmeier–Steinhauser constraint aggregation function using the adaptive
+hardness proposed by Poon and Martins.
+"""
+function ksmax(x, hardness::KSAdaptiveHardness)
+    # unpack original hardness and target slope
+    original_hardness = hardness.default # original hardness
+    target_derivative = -hardness.tol # minimum target derivative of ksmax wrt hardness
+    # compute KS function value and derivative
+    original_value = ksmax(x, original_hardness)
+    original_derivative = ksmax_h(x, original_hardness)
+    # return result if it is within the tolerance
+    if original_derivative > target_derivative
+        return original_value
+    end
+    # otherwise compute the derivative of the KS function derivative in the log scale
+    perturbed_hardness = original_hardness + hardness.step
+    perturbed_derivative = ksmax_h(x, perturbed_hardness)
+    tmp = log10(perturbed_derivative/original_derivative)/log10(perturbed_hardness/original_hardness)
+    # and apply newton's method once in the log scale to get the new hardness
+    new_hardness = log10(original_hardness) - log10(target_derivative/original_derivative)/tmp
+    # then take it out of the log scale
+    new_hardness = 10^new_hardness
+    println(new_hardness)
+    # and use the new hardness to compute ksmax
+    return ksmax(x, new_hardness)
+end
+
+"""
+    ksmax_h(x, hardness)
+
+
+"""
+function ksmax_h(x, hardness=25)
+    k = maximum(x)
+    return 1.0/hardness*(sum((x.-k).*exp.(hardness*(x.-k)))/sum(exp.(hardness*(x.-k))) - 1.0/hardness*log(sum(exp.(hardness*(x.-k)))))
+end
+
+"""
     sigmoid(x)
 
 Sigmoid function, implemented with branching to avoid NaNs
