@@ -1,7 +1,5 @@
 module FLOWMath
 
-using Parameters
-
 include("quadrature.jl")
 export trapz
 
