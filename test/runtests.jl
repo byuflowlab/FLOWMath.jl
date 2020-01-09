@@ -49,8 +49,8 @@ y = abs_smooth(x, delta_x)
 @test y == 3.0
 
 x = 3.0
-delta_x = 0.0
-y = abs_smooth(x, 0.1)
+delta_x = 0.1
+y = abs_smooth(x, delta_x)
 @test y == 3.0
 
 x = -3.0
@@ -236,6 +236,162 @@ ytest = [-0.24999999999566003,
           0.062500000002604]
 @test isapprox(y, ytest)
 
+# -------------------------
+
+# ------ cubic_blend ---------
+x = -3.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test y == -3.0
+
+x = 3.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test y == 9.0
+
+x = 0.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test y == 0.0
+
+x = -0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test y == f1x
+
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test y == f2x
+
+x = -0.05
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test isapprox(y, -0.041796875000000004)
+
+x = 0.05
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend(f1x, f2x, x, xt, delta_x)
+@test isapprox(y, 0.009921875000000004)
+
+# vectorized
+x = -0.25:0.05:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+delta_x = 0.1
+y = cubic_blend.(f1x, f2x, x, xt, delta_x)
+ytest = [-0.25,
+         -0.2,
+         -0.15,
+         -0.1,
+         -0.041796875000000004,
+          0.0,
+          0.009921875000000004,
+          0.010000000000000002,
+          0.0225,
+          0.04000000000000001,
+          0.0625]
+@test isapprox(y, ytest)
+
+# -------------------------
+# ------ quintic_blend ---------
+x = -3.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test y == -3.0
+
+x = 3.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test y == 9.0
+
+x = 0.0
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test y == 0.0
+
+x = -0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test y == f1x
+
+x = 0.1
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test y == f2x
+
+x = -0.05
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test isapprox(y, -0.044565429687500005)
+
+x = 0.05
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend(f1x, f2x, x, xt, delta_x)
+@test isapprox(y, 0.007416992187499999)
+
+# vectorized
+x = -0.25:0.05:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+delta_x = 0.1
+y = quintic_blend.(f1x, f2x, x, xt, delta_x)
+ytest = [ -0.25,
+          -0.2,
+          -0.15,
+          -0.1,
+          -0.044565429687500005,
+           0.0,
+           0.007416992187499999,
+           0.010000000000000002,
+           0.0225,
+           0.04000000000000001,
+           0.0625]
+@test isapprox(y, ytest)
 # -------------------------
 
 # ------- forward/backwards/central/complex diff ----------
