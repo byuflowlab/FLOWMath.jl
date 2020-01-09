@@ -9,6 +9,7 @@ export brent
 include("smooth.jl")
 export abs_smooth
 export ksmax, ksmin
+export ksmax_adaptive, ksmin_adaptive
 export sigmoid
 export sigmoid_blend
 
