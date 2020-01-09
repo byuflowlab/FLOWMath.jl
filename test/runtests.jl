@@ -128,6 +128,94 @@ x_max_smooth = ksmin(x, hardness)
 
 # -------------------------
 
+# ------ ksmax_adaptive ---------
+x = [0.0, 0.0]
+x_max_smooth = ksmax_adaptive(x)
+@test isapprox(x_max_smooth, 0.0008325546111576975)
+
+# overflow
+x = [1e6, 1e6]
+x_max_smooth = ksmax_adaptive(x)
+@test isapprox(x_max_smooth, 1.0000000008325547e6)
+
+# underflow
+x = [-1e6, -1e6]
+x_max_smooth = ksmax_adaptive(x)
+@test isapprox(x_max_smooth, -999999.9991674453)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 100.0
+x_max_smooth = ksmax_adaptive(x, hardness)
+@test isapprox(x_max_smooth, 0.0008325546111576975)
+
+x = [-0.1, 0.0]
+hardness = 100.0
+x_max_smooth = ksmax_adaptive(x, hardness)
+@test isapprox(x_max_smooth, 4.5398899216870535e-7)
+
+# tolerance
+x = [0.0, 0.0]
+tol = 1e-3
+x_max_smooth = ksmax_adaptive(x, tol=tol)
+@test isapprox(x_max_smooth, 0.013862943611198907)
+
+# smoothing_fraction
+x = [-0.165, 0.0]
+smoothing_fraction = 0.1
+x_max_smooth = ksmax_adaptive(x, smoothing_fraction=smoothing_fraction)
+@test isapprox(x_max_smooth, 5.261253727654178e-6)
+
+x = [-0.165, 0.0]
+smoothing_fraction = 0.2
+x_max_smooth = ksmax_adaptive(x, smoothing_fraction=smoothing_fraction)
+@test isapprox(x_max_smooth, 5.2856933329025475e-6)
+
+# ------ ksmin_adaptive ---------
+x = [0.0, 0.0]
+x_max_smooth = ksmin_adaptive(x)
+@test isapprox(x_max_smooth, -0.0008325546111576975)
+
+# overflow
+x = [1e6, 1e6]
+x_max_smooth = ksmin_adaptive(x)
+@test isapprox(x_max_smooth, 999999.9991674453)
+
+# underflow
+x = [-1e6, -1e6]
+x_max_smooth = ksmin_adaptive(x)
+@test isapprox(x_max_smooth, -1.0000000008325547e6)
+
+# hardness
+x = [0.0, 0.0]
+hardness = 100.0
+x_max_smooth = ksmin_adaptive(x, hardness)
+@test isapprox(x_max_smooth, -0.0008325546111576975)
+
+x = [0.1, 0.0]
+hardness = 100.0
+x_max_smooth = ksmin_adaptive(x, hardness)
+@test isapprox(x_max_smooth, -4.5398899216870535e-7)
+
+# tolerance
+x = [0.0, 0.0]
+tol = 1e-3
+x_max_smooth = ksmin_adaptive(x, tol=tol)
+@test isapprox(x_max_smooth, -0.013862943611198907)
+
+# smoothing_fraction
+x = [0.165, 0.0]
+smoothing_fraction = 0.1
+x_max_smooth = ksmin_adaptive(x, smoothing_fraction=smoothing_fraction)
+@test isapprox(x_max_smooth, -5.261253727654178e-6)
+
+x = [0.165, 0.0]
+smoothing_fraction = 0.2
+x_max_smooth = ksmin_adaptive(x, smoothing_fraction=smoothing_fraction)
+@test isapprox(x_max_smooth, -5.2856933329025475e-6)
+
+# -------------------------
+
 # ------ sigmoid ---------
 x = -0.5
 y = sigmoid(x)
