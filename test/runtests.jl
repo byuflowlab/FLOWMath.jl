@@ -482,38 +482,6 @@ ytest = [ -0.25,
 @test isapprox(y, ytest)
 # -------------------------
 
-# ------- forward/backwards/central/complex diff ----------
-
-f(x) = @. exp(x) / sqrt(sin(x)^3 + cos(x)^3)
-
-function dfdx(x)
-    B = @. sqrt(sin(x)^3 + cos(x)^3)
-    T = @. exp(x)
-    dT = @. exp(x)
-    dB = @. 0.5/sqrt(sin(x)^3 + cos(x)^3)*3*(sin(x)^2*cos(x) - cos(x)^2*sin(x))
-    return @. (B*dT - T*dB)/B^2
-end
-
-x = [1.5, 0.5]
-dff = forwarddiff(f, x)
-dfb = backwarddiff(f, x)
-dfc = centraldiff(f, x)
-dfcplx = complexstep(f, x)
-dfexact = dfdx(x)
-@test isapprox(dff[1, 1], dfexact[1], atol=1e-4)
-@test isapprox(dfb[1, 1], dfexact[1], atol=1e-4)
-@test isapprox(dfc[1, 1], dfexact[1], atol=1e-6)
-@test isapprox(dfcplx[1, 1], dfexact[1], atol=1e-15)
-@test isapprox(dff[2, 2], dfexact[2], atol=1e-4)
-@test isapprox(dfb[2, 2], dfexact[2], atol=1e-4)
-@test isapprox(dfc[2, 2], dfexact[2], atol=1e-6)
-@test isapprox(dfcplx[2, 2], dfexact[2], atol=1e-15)
-
-
-
-# -------------------------------------------------------
-
-
 # ---------- interpolate -------------
 
 x = 0:pi/4:2*pi
