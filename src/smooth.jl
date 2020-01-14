@@ -40,6 +40,77 @@ underestimate the minimum function, i.e. `minimum(x) <= ksmin(x, hardness)`.
 ksmin(x, hardness=50) = -ksmax(-x, hardness)
 
 """
+    ksmax_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+
+Kreisselmeier–Steinhauser constraint aggregation function using the adaptive
+hardness proposed by Poon and Martins in "An adaptive approach to constraint
+aggregation using adjoint sensitivity analysis".  This implementation uses
+Newton's method rather than the secant method for increasing hardness values.
+Some blending is also used to ensure that result is C1 continuous.
+`smoothing_fraction` controls the smoothness of this blending.
+"""
+function ksmax_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+    # check if derivative of the KS function wrt hardness is within the tolerance
+    deriv = ksmax_h(x, hardness)
+    target_deriv = -tol
+    if abs(deriv) > tol * (1-smoothing_fraction)
+        # increase hardness by applying Newton's method once in log-log space
+        dderiv = ksmax_hh(x, hardness)*hardness/deriv
+        new_hardness = 10^(log10(hardness) + log10(target_deriv/deriv)/dderiv)
+        hardness = quintic_blend(hardness, new_hardness, -deriv, -target_deriv, smoothing_fraction*tol)
+    end
+    # use the new hardness to compute ksmax
+    return ksmax(x, hardness)
+end
+
+"""
+    ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+
+Kreisselmeier–Steinhauser constraint aggregation function using the adaptive
+hardness proposed by Poon and Martins in "An adaptive approach to constraint
+aggregation using adjoint sensitivity analysis".  This implementation uses
+Newton's method rather than the secant method for increasing hardness values.
+Some blending is also used to ensure that result is C1 continuous.
+`smoothing_fraction` controls the smoothness of this blending.
+"""
+ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1) =
+    -ksmax_adaptive(-x, hardness, tol=tol, smoothing_fraction=smoothing_fraction)
+
+"""
+    ksmax_h(x, hardness)
+
+Computes the derivative of the Kreisselmeier–Steinhauser constraint aggregation
+function with respect to `hardness`.
+"""
+function ksmax_h(x, hardness)
+    k = maximum(x)
+    tmp1 = exp.(hardness*(x.-k))
+    tmp2 = sum((x.-k).*tmp1)
+    tmp3 = sum(tmp1)
+    tmp4 = 1.0/hardness*log(tmp3)
+    return 1.0/hardness*(tmp2/tmp3 - tmp4)
+end
+
+"""
+    ksmax_hh(x, hardness)
+
+Computes the second derivative of the Kreisselmeier–Steinhauser constraint aggregation
+function with respect to `hardness`.
+"""
+function ksmax_hh(x, hardness)
+    k = maximum(x)
+    tmp1 = exp.(hardness*(x.-k))
+    tmp2 = sum((x.-k).*tmp1)
+    tmp2_h = sum((x.-k).^2 .* tmp1)
+    tmp3 = sum(tmp1)
+    tmp3_h = sum((x.-k).*tmp1)
+    tmp4 = 1.0/hardness*log(tmp3)
+    tmp4_h = 1.0/hardness*(tmp2/tmp3 - tmp4)
+    return -1.0/hardness^2*(tmp2/tmp3 - tmp4) +
+        1.0/hardness*(tmp2_h/tmp3 - tmp2*tmp3_h/tmp3^2 - tmp4_h)
+end
+
+"""
     sigmoid(x)
 
 Sigmoid function, implemented with branching to avoid NaNs
