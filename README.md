@@ -108,21 +108,6 @@ tpt = 0:0.5:10.0
 fpt = interp4d(akima, x, y, z, t, f, xpt, ypt, zpt, tpt)
 ```
 
-## Derivate Estimation
-
-We highly recommend using algorithmic differentiation (AD) and analytic sensitivity methods.  The below methods provide quick and dirty Jacobians for prototyping and/or to check derivatives (particularly w/ complex step).
-
-```julia
-# 2 inputs, 3 outputs
-g(x) = [exp(x[1]) / sqrt(sin(x[1])^3 + cos(x[2])^3); sin(x[2]); cos(x[1])]
-
-x = [1.5, 0.5]
-dff = forwarddiff(g, x)
-dfb = backwarddiff(g, x)
-dfc = centraldiff(g, x)
-dfcplx = complexstep(g, x)
-```
-
 ## Smoothing
 
 ### Absolute value

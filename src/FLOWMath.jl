@@ -23,11 +23,4 @@ export interp2d
 export interp3d
 export interp4d
 
-include("derivatives.jl")
-export forwarddiff
-export backwarddiff
-export centraldiff
-export complexstep
-
-
 end # module
