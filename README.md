@@ -169,3 +169,29 @@ xt = 0.0
 hardness = 100
 y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
 ```
+
+### Blending functions using cubic or quintic polynomials
+
+Cubic or quintic polynomials can also be used to construct a piecewise function that smoothly blends two functions.  The advantage of this approach compared to `sigmoid_blend` is that the blending can be restricted to a small interval defined by the half-width `delta_x`.  The disadvantage of this approach is that the resulting function is only C1 continuous when `cubic_blend` is used, and C2 continuous when `quintic_blend` is used.  The method implemented in this package uses a user-specified transition location (`xt`).  The smoothness of the transition between the two functions can be adjusted by modifying `delta_x`, which is the half-width of the transition interval.
+
+```julia
+x = 0.05
+f1x = x
+f2x = x^2
+xt = 0.0
+delta_x = 0.1
+y1 = cubic_blend(f1x, f2x, x, xt, delta_x)
+y2 = quintic_blend(f1x, f2x, x, xt, delta_x)
+```
+
+`cubic_blend` and `quintic_blend` can also be used with vector inputs using broadcasting.
+
+```julia
+x = -0.25:0.01:0.25
+f1x = x
+f2x = x.^2
+xt = 0.0
+delta_x = 0.1
+y1 = cubic_blend.(f1x, f2x, x, xt, delta_x)
+y2 = quintic_blend.(f1x, f2x, x, xt, delta_x)
+```

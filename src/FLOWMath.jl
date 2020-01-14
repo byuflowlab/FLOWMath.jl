@@ -11,6 +11,8 @@ export abs_smooth
 export ksmax, ksmin
 export sigmoid
 export sigmoid_blend
+export cubic_blend
+export quintic_blend
 
 include("interpolate.jl")
 export akima_setup
