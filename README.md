@@ -65,8 +65,9 @@ or if you plan to evaluate the spline repeatedly
 ```julia
 
 spline = akima_setup(x, y)
-ypt1 = akima_interp(xpt1, spline)
-ypt2 = akima_interp(xpt2, spline)
+ypt = similar(xpt1)
+akima_interp!(ypt, xpt1, spline)  # ypt changed in place
+akima_interp!(ypt, xpt2, spline)
 ```
 
 ### 2D/3D/4D Interpolation using Recursive 1D Interpolation

@@ -87,16 +87,15 @@ end
 
 
 """
-    akima_interp(x, spline)
+    akima_interp!(y, x, spline)
 
 Evaluate the spline setup by akima_setup.  x are the locations to evaluate the spline at
-and spline is the object returned by akima_setup.
+and spline is the object returned by akima_setup.  the result is returned in place at y.
 """
-function akima_interp(x, spline)
+function akima_interp!(y, x, spline)
    
     # interpolate at each point
     n = length(x)
-    y = zeros(eltype(x), n)
 
     for i = 1:n
 
@@ -111,7 +110,7 @@ function akima_interp(x, spline)
 
     end
 
-    return y
+    return nothing
 end
 
 """
@@ -122,7 +121,9 @@ xpt may be an array.
 """
 function akima(xdata, ydata, xpt)
     spline = akima_setup(xdata, ydata)
-    return akima_interp(xpt, spline)
+    ypt = similar(xpt)
+    akima_interp!(ypt, xpt, spline)
+    return ypt
 end
 
 
