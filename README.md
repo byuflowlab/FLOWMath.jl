@@ -6,7 +6,23 @@
 -->
 ![](https://github.com/byuflowlab/FLOWMath.jl/workflows/Run%20tests/badge.svg)
 
-*A collection of mathematical functions and convenience methods*
+*A collection of mathematical functions and convenience methods*.  These are simple methods we use regularly in our lab that aren't readily available in the Julia ecosystem.  As dedicated packages have emerged corresponding functions have been removed from this collection.
+
+Quadrature
+- trapezoidal integration
+
+Root Finding
+- Brent's method
+
+Interpolation
+- Akima spline
+- 2D/3D/4D interpolation from recursive 1D iterpolation
+
+Smoothing
+- absolute value
+- Kreisselmeier-Steinhauser constraint aggregation function
+- sigmoid blending
+- cubic/quintic polynomial blending
 
 Examples of the available methods are shown below.  More examples are available in the test suite (/test/runtests.jl)
 
