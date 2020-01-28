@@ -9,7 +9,7 @@ makedocs(;
     repo="https://github.com/byuflowlab/FLOWMath.jl/blob/{commit}{path}#L{line}",
     sitename="FLOWMath.jl",
     authors="Andrew Ning <aning@byu.edu>",
-    assets=String[],
+    # assets=String[],
 )
 
 deploydocs(;

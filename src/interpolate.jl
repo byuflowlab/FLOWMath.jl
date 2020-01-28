@@ -21,17 +21,18 @@ end
 
 
 """
-    Akima(xdata, ydata, delta_x=0.1)
+    Akima(xdata, ydata, delta_x=0.0)
 
-Creates an akima spline at node points: xdata, ydata.  This is a 1D spline that avoids
+Creates an akima spline at node points: `xdata`, `ydata`.  This is a 1D spline that avoids
 overshooting issues common with many other polynomial splines resulting in a more
-natural curve.  It also only depends on local points (i-2...i+2) allow for more efficient
-computation.  delta_x is the half width of a smoothing interval used for the absolute
-value function.  Set delta_x=0 to recover the original akima spline.  The smoothing
+natural curve.  It also only depends on local points (`i-2`...`i+2`) allow for more efficient
+computation.  `delta_x` is the half width of a smoothing interval used for the absolute
+value function.  Set `delta_x=0` to recover the original akima spline.  The smoothing
 is only useful if you want to differentiate xdata and ydata.  In many case the nodal points
 are fixed so this is not needed.  Returns an akima spline object (Akima struct).
-This function, in connection with akima_interp separates the construction from evaluation.
+This function, only performs construction of the spline, not evaluation.
 This is useful if you want to evaluate the same mesh at multiple different conditions.
+A convenience method exists below to perform both in one shot.
 """
 function Akima(xdata, ydata, delta_x=0.0)
 
@@ -101,7 +102,22 @@ end
 
 (spline::Akima)(x::AbstractVector) = spline.(x)
 
+"""
+    akima(x, y, xpt)
+
+A convenience method to perform construction and evaluation of the spline in one step.
+See docstring for Akima for more details.  
+
+**Arguments**
+- `x, y::Vector{Float}`: the node points
+- `xpt::Vector{Float} or ::Float`: the evaluation point(s)
+
+**Returns**
+- `ypt::Vector{Float} or ::Float`: interpolated value(s) at xpt using akima spline.
+"""
 akima(x, y, xpt) = Akima(x, y)(xpt)
+
+
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)

@@ -10,13 +10,20 @@
 
 **Arguments**
 - `f`: scalar function, that optionally takes additional arguments
-- `a`::Float, `b::Float`: bracketing interval for a root - sign changes sign between: (f(a) * f(b) < 0)
+- `a`::Float, b::Float`: bracketing interval for a root - sign changes sign between: (f(a) * f(b) < 0)
 - `args::Tuple`: tuple of additional arguments to pass to f
 - `atol::Float`: absolute tolerance (positive) for root
 - `rtol::Float`: relative tolerance for root
 - `maxiter::Int`: maximum number of iterations allowed
 - `full_output::Bool`: flag to indicate whether you want just the root, or the root with a 
     second argument (tuple) containing the number of iterations, function calls, and a convergence message.
+
+**Returns**
+- `xstar::Float`: a root of f
+- `info::Tuple`: returned if `full_output=True`.  A named tuple containing:
+    - `iter::Int`: number of iterations
+    - 'fcalls::Int`: number of function calls
+    - 'flag::String`: a convergence/error message.
 """
 function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
 
