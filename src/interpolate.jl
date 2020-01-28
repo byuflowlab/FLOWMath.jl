@@ -1,4 +1,4 @@
-#= 
+#=
 Interpolation Methods
 
 =#
@@ -21,19 +21,19 @@ end
 
 
 """
-    akima_setup(xdata, ydata, delta_x=0.1)
+    Akima(xdata, ydata, delta_x=0.1)
 
-Setup akima spline at node points: xdata, ydata.  This is a 1D spline that avoids
+Creates an akima spline at node points: xdata, ydata.  This is a 1D spline that avoids
 overshooting issues common with many other polynomial splines resulting in a more
 natural curve.  It also only depends on local points (i-2...i+2) allow for more efficient
 computation.  delta_x is the half width of a smoothing interval used for the absolute
 value function.  Set delta_x=0 to recover the original akima spline.  The smoothing
-is only useful if you want to differentiate xdata and ydata.  In many case the nodal points 
-are fixed so this is not needed.  Returns an akima spline object (Akima struct).  
-This function, in connection with akima_interp separates the construction from evaluation.  
+is only useful if you want to differentiate xdata and ydata.  In many case the nodal points
+are fixed so this is not needed.  Returns an akima spline object (Akima struct).
+This function, in connection with akima_interp separates the construction from evaluation.
 This is useful if you want to evaluate the same mesh at multiple different conditions.
 """
-function akima_setup(xdata, ydata, delta_x=0.0)
+function Akima(xdata, ydata, delta_x=0.0)
 
     # setup
     eps = 1e-30
@@ -85,57 +85,33 @@ function akima_setup(xdata, ydata, delta_x=0.0)
     return Akima(xdata, ydata, p0, p1, p2, p3)
 end
 
+function (spline::Akima)(x::Number)
 
-"""
-    akima_interp!(y, x, spline)
-
-Evaluate the spline setup by akima_setup.  x are the locations to evaluate the spline at
-and spline is the object returned by akima_setup.  the result is returned in place at y.
-"""
-function akima_interp!(y, x, spline)
-   
-    # interpolate at each point
-    n = length(x)
-
-    for i = 1:n
-
-        j = findlast(x[i] .>= spline.xdata[1:end-1])
-        if j === nothing
-            j = 1
-        end
-
-        # evaluate polynomial
-        dx = x[i] - spline.xdata[j]
-        y[i] = spline.p0[j] + spline.p1[j]*dx + spline.p2[j]*dx^2 + spline.p3[j]*dx^3
-
+    j = findlast(x .>= spline.xdata[1:end-1])
+    if j === nothing
+        j = 1
     end
 
-    return nothing
+    # evaluate polynomial
+    dx = x - spline.xdata[j]
+    y = spline.p0[j] + spline.p1[j]*dx + spline.p2[j]*dx^2 + spline.p3[j]*dx^3
+
+    return y
 end
 
-"""
-    akima(xdata, ydata, xpt)
+(spline::Akima)(x::AbstractVector) = spline.(x)
 
-A convenience method to perform both the setup and evaluation of the akima spline in one go.
-xpt may be an array.
-"""
-function akima(xdata, ydata, xpt)
-    spline = akima_setup(xdata, ydata)
-    ypt = similar(xpt)
-    akima_interp!(ypt, xpt, spline)
-    return ypt
-end
-
+akima(x, y, xpt) = Akima(x, y)(xpt)
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
 
 2D interpolation using recursive 1D interpolation.  This approach is likely less efficient than a more direct
-2D interpolation method, especially one you can create separate creation from evaluation, 
+2D interpolation method, especially one you can create separate creation from evaluation,
 but it is generalizable to any spline approach and any dimension.
 
 **Arguments**
-- `interp1d`: any spline function of form: ypt = interp1d(xdata, ydata, xpt) where data are the known 
+- `interp1d`: any spline function of form: ypt = interp1d(xdata, ydata, xpt) where data are the known
     data(node) points and pt are the points where you want to evaluate the spline at.
 - `xdata::Vector{Float}`, `ydata::Vector{Float}`: Define the 2D grid
 - `fdata::Matrix{Float}`: where fdata[i, j] is the function value at xdata[i], ydata[j]

@@ -16,8 +16,7 @@ export cubic_blend
 export quintic_blend
 
 include("interpolate.jl")
-export akima_setup
-export akima_interp
+export Akima
 export akima
 export interp2d
 export interp3d

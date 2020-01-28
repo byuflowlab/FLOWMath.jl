@@ -64,10 +64,10 @@ or if you plan to evaluate the spline repeatedly
 
 ```julia
 
-spline = akima_setup(x, y)
-ypt = similar(xpt1)
-akima_interp!(ypt, xpt1, spline)  # ypt changed in place
-akima_interp!(ypt, xpt2, spline)
+spline = Akima(x, y)
+ypt = similar(xpt)
+ypt .= spline.(xpt) # ypt change in place
+ypt = spline(xpt)
 ```
 
 ### 2D/3D/4D Interpolation using Recursive 1D Interpolation
@@ -86,8 +86,8 @@ for i = 1:11
     end
 end
 
-xpt = range(-5.0, 5.0, length=100)
-ypt = range(-5.0, 5.0, length=100)
+xpt = range(-5.0, stop=5.0, length=100)
+ypt = range(-5.0, stop=5.0, length=100)
 
 zpt = interp2d(akima, x, y, z, xpt, ypt)
 
