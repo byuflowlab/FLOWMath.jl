@@ -1,8 +1,12 @@
 # FLOWMath.jl
 
+Examples of the available methods are shown below.  More examples are available in the test suite (/test/runtests.jl)
+
 ## Quadrature
 
 ### Trapezoidal Integration
+
+This is just simple trapezoidal integration using vectors.
 
 ```@example trapz
 using FLOWMath: trapz
@@ -20,6 +24,8 @@ trapz
 
 ### Brent's Method (1D functions)
 
+Brent's method is an effective 1D root finding method as it combines bracketing methods (bisection) with fast quadratic interpolation.  Thus, you can get near quadratic convergence with safeguarding.
+
 ```@example
 using FLOWMath: brent
 
@@ -36,6 +42,8 @@ brent
 ## Interpolation
 
 ### Akima Spline
+
+An Akima spline is a 1D spline that avoids overshooting issues common with many other polynomial splines resulting in a more natural curve.  It also only uses local support allowing for more efficient computation.
 
 Interpolation is perhaps clearest through plotting so we'll load a plotting package for this examples.
 
