@@ -13,5 +13,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/byuflowlab/FLOWMath.jl",
+    repo="github.com/byuflowlab/FLOWMath.jl.git",
 )

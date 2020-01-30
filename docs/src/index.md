@@ -6,7 +6,7 @@ Examples of the available methods are shown below.  More examples are available 
 
 ### Trapezoidal Integration
 
-This is just simple trapezoidal integration using vectors.
+This is just simple trapezoidal integration using vectors.  [Gaussian quadrature](https://github.com/JuliaMath/QuadGK.jl) is much better, but for times when we need to define a mesh for other purposes and cannot use an adaptive method a simple trapezoidal integration fits the bill.
 
 ```@example trapz
 using FLOWMath: trapz
@@ -24,7 +24,7 @@ trapz
 
 ### Brent's Method (1D functions)
 
-Brent's method is an effective 1D root finding method as it combines bracketing methods (bisection) with fast quadratic interpolation.  Thus, you can get near quadratic convergence with safeguarding.
+Brent's method is an effective 1D root finding method as it combines bracketing methods (bisection) with fast quadratic interpolation.  Thus, you can get near quadratic convergence but with safeguarding.
 
 ```@example
 using FLOWMath: brent
@@ -203,6 +203,11 @@ max_x = ksmax(x, hardness)
 min_x = ksmin(x, hardness)
 ```
 
+```@docs
+ksmax
+ksmin
+```
+
 ### Blending functions using the sigmoid function
 
 The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location (`xt`) and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
@@ -227,6 +232,17 @@ f2x = x.^2
 xt = 0.0
 hardness = 100
 y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
+
+using PyPlot
+figure()
+plot(x, y)
+savefig("sigmoid.svg"); nothing # hide
+```
+
+![](sigmoid.svg)
+
+```@docs
+sigmoid_blend
 ```
 
 ### Blending functions using cubic or quintic polynomials
@@ -255,4 +271,18 @@ xt = 0.0
 delta_x = 0.1
 y1 = cubic_blend.(f1x, f2x, x, xt, delta_x)
 y2 = quintic_blend.(f1x, f2x, x, xt, delta_x)
+
+using PyPlot
+figure()
+plot(x, y1)
+plot(x, y2)
+legend(["cubic", "quintic"])
+savefig("cubic.svg"); nothing # hide
+```
+
+![](cubic.svg)
+
+```@docs
+cubic_blend
+quintic_blend
 ```
