@@ -12,6 +12,6 @@ makedocs(;
     # assets=String[],
 )
 
-deploydocs(;
+deploydocs(
     repo="github.com/byuflowlab/FLOWMath.jl.git",
 )
