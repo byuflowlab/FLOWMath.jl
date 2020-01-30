@@ -49,7 +49,7 @@ Interpolation is perhaps clearest through plotting so we'll load a plotting pack
 
 ```@example akima
 using PyPlot 
-nothing #hide
+nothing # hide
 ```
 
 
