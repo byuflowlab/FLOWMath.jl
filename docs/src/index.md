@@ -48,7 +48,8 @@ An Akima spline is a 1D spline that avoids overshooting issues common with many 
 Interpolation is perhaps clearest through plotting so we'll load a plotting package for this examples.
 
 ```@example akima
-using PyPlot
+using PyPlot 
+nothing #hide
 ```
 
 
