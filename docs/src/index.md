@@ -11,7 +11,7 @@ This is just simple trapezoidal integration using vectors.  [Gaussian quadrature
 ```@example trapz
 using FLOWMath: trapz
 
-x = range(0.0, pi+1e-15, step=pi/100)
+x = range(0.0, stop=pi+1e-15, step=pi/100)
 y = sin.(x)
 z = trapz(x, y)
 ```
@@ -48,7 +48,7 @@ An Akima spline is a 1D spline that avoids overshooting issues common with many 
 Interpolation is perhaps clearest through plotting so we'll load a plotting package for this examples.
 
 ```@example akima
-using PyPlot 
+using PyPlot
 nothing # hide
 ```
 
@@ -220,23 +220,26 @@ x = 0.1
 f1x = x
 f2x = x^2
 xt = 0.0
-hardness = 100
+hardness = 25
 y = sigmoid_blend(f1x, f2x, x, xt, hardness)
 ```
 
 `sigmoid_blend` can also be used with vector inputs using broadcasting.
 
 ```@example sb
-x = -0.25:0.01:0.25
+x = -0.25:0.001:0.25
 f1x = x
 f2x = x.^2
 xt = 0.0
-hardness = 100
+hardness = 25
 y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
 
 using PyPlot
 figure()
+plot(x, f1x)
+plot(x, f2x)
 plot(x, y)
+legend(["f1(x)","f2(x)","sigmoid"])
 savefig("sigmoid.svg"); nothing # hide
 ```
 
@@ -265,7 +268,7 @@ y2 = quintic_blend(f1x, f2x, x, xt, delta_x)
 `cubic_blend` and `quintic_blend` can also be used with vector inputs using broadcasting.
 
 ```@example poly
-x = -0.25:0.01:0.25
+x = -0.25:0.001:0.25
 f1x = x
 f2x = x.^2
 xt = 0.0
@@ -275,9 +278,11 @@ y2 = quintic_blend.(f1x, f2x, x, xt, delta_x)
 
 using PyPlot
 figure()
+plot(x, f1x)
+plot(x, f2x)
 plot(x, y1)
 plot(x, y2)
-legend(["cubic", "quintic"])
+legend(["f1(x)","f2(x)","cubic", "quintic"])
 savefig("cubic.svg"); nothing # hide
 ```
 
