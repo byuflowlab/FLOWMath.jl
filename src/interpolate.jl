@@ -106,7 +106,7 @@ end
     akima(x, y, xpt)
 
 A convenience method to perform construction and evaluation of the spline in one step.
-See docstring for Akima for more details.  
+See docstring for Akima for more details.
 
 **Arguments**
 - `x, y::Vector{Float}`: the node points
@@ -117,7 +117,33 @@ See docstring for Akima for more details.
 """
 akima(x, y, xpt) = Akima(x, y)(xpt)
 
+"""
+    gradient(spline, x)
 
+Computes the gradient of a Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Vector{Float} or ::Float`: the evaluation point(s)
+
+**Returns**
+- `dydx::Vector{Float} or ::Float`: interpolated value(s) at xpt using akima spline.
+"""
+function gradient(spline::Akima, x::Number)
+
+    j = findlast(x .>= spline.xdata[1:end-1])
+    if j === nothing
+        j = 1
+    end
+
+    # evaluate polynomial
+    dx = x - spline.xdata[j]
+    dydx = spline.p1[j] + 2*spline.p2[j]*dx + 3*spline.p3[j]*dx^2
+
+    return dydx
+end
+
+gradient(spline::Akima, x::AbstractVector) = gradient.(Ref(spline), x)
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)

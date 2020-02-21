@@ -87,6 +87,18 @@ Akima
 akima
 ```
 
+You can also compute the gradient of the spline.
+
+```@example akima
+
+dydx = gradient(spline, xpt)
+nothing # hide
+```
+
+```@docs
+gradient
+```
+
 ### 2D/3D/4D Interpolation using Recursive 1D Interpolation
 
 The functions `interp2d`, `interp3d`, and `interp4d` are generic and will accept any method that performs 1D interpolation as the first argument.  In the below examples, akima is used.  These examples are based off of examples from Matlab's interpn documentation.
