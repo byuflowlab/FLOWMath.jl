@@ -87,15 +87,16 @@ Akima
 akima
 ```
 
-You can also compute the gradient of the spline.
+You can also compute the derivative and/or gradient of the spline.
 
 ```@example akima
-
+dydx = derivative(spline, pi/2)
 dydx = gradient(spline, xpt)
 nothing # hide
 ```
 
 ```@docs
+derivative
 gradient
 ```
 

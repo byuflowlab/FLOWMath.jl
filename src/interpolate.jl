@@ -118,18 +118,18 @@ See docstring for Akima for more details.
 akima(x, y, xpt) = Akima(x, y)(xpt)
 
 """
-    gradient(spline, x)
+    derivative(spline, x)
 
-Computes the gradient of a Akima spline at x.
+Computes the derivative of an Akima spline at x.
 
 **Arguments**
 - `spline::Akima}`: an Akima spline
-- `x::Vector{Float} or ::Float`: the evaluation point(s)
+- `x::Float`: the evaluation point(s)
 
 **Returns**
-- `dydx::Vector{Float} or ::Float`: interpolated value(s) at xpt using akima spline.
+- `dydx::Float`: derivative at x using akima spline.
 """
-function gradient(spline::Akima, x::Number)
+function derivative(spline::Akima, x)
 
     j = findlast(x .>= spline.xdata[1:end-1])
     if j === nothing
@@ -143,7 +143,19 @@ function gradient(spline::Akima, x::Number)
     return dydx
 end
 
-gradient(spline::Akima, x::AbstractVector) = gradient.(Ref(spline), x)
+"""
+    gradient(spline, x)
+
+Computes the gradient of a Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Vector{Float}`: the evaluation point(s)
+
+**Returns**
+- `dydx::Vector{Float}`: gradient at x using akima spline.
+"""
+gradient(spline::Akima, x) = derivative.(Ref(spline), x)
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
