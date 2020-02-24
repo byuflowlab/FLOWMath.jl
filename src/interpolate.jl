@@ -88,9 +88,13 @@ end
 
 function (spline::Akima)(x::Number)
 
-    j = findlast(x .>= spline.xdata[1:end-1])
-    if j === nothing
+    n = length(spline.xdata)
+
+    j = searchsortedlast(spline.xdata, x)
+    if j == 0
         j = 1
+    elseif j == n
+        j = n - 1
     end
 
     # evaluate polynomial
@@ -131,9 +135,13 @@ Computes the derivative of an Akima spline at x.
 """
 function derivative(spline::Akima, x)
 
-    j = findlast(x .>= spline.xdata[1:end-1])
-    if j === nothing
+    n = length(spline.xdata)
+
+    j = searchsortedlast(spline.xdata, x)
+    if j == 0
         j = 1
+    elseif j == n
+        j = n - 1
     end
 
     # evaluate polynomial
