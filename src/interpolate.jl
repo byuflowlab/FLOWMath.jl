@@ -88,9 +88,13 @@ end
 
 function (spline::Akima)(x::Number)
 
-    j = findlast(x .>= spline.xdata[1:end-1])
-    if j === nothing
+    n = length(spline.xdata)
+
+    j = searchsortedlast(spline.xdata, x)
+    if j == 0
         j = 1
+    elseif j == n
+        j = n - 1
     end
 
     # evaluate polynomial
@@ -106,7 +110,7 @@ end
     akima(x, y, xpt)
 
 A convenience method to perform construction and evaluation of the spline in one step.
-See docstring for Akima for more details.  
+See docstring for Akima for more details.
 
 **Arguments**
 - `x, y::Vector{Float}`: the node points
@@ -117,7 +121,49 @@ See docstring for Akima for more details.
 """
 akima(x, y, xpt) = Akima(x, y)(xpt)
 
+"""
+    derivative(spline, x)
 
+Computes the derivative of an Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Float`: the evaluation point(s)
+
+**Returns**
+- `dydx::Float`: derivative at x using akima spline.
+"""
+function derivative(spline::Akima, x)
+
+    n = length(spline.xdata)
+
+    j = searchsortedlast(spline.xdata, x)
+    if j == 0
+        j = 1
+    elseif j == n
+        j = n - 1
+    end
+
+    # evaluate polynomial
+    dx = x - spline.xdata[j]
+    dydx = spline.p1[j] + 2*spline.p2[j]*dx + 3*spline.p3[j]*dx^2
+
+    return dydx
+end
+
+"""
+    gradient(spline, x)
+
+Computes the gradient of a Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Vector{Float}`: the evaluation point(s)
+
+**Returns**
+- `dydx::Vector{Float}`: gradient at x using akima spline.
+"""
+gradient(spline::Akima, x) = derivative.(Ref(spline), x)
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
