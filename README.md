@@ -5,6 +5,8 @@
 
 *A collection of mathematical functions and convenience methods*.  These are simple methods we use regularly in our lab that aren't readily available in the Julia ecosystem.  
 
+Authors: Andrew Ning and Taylor McDonnell
+
 Quadrature
 - trapezoidal integration
 
@@ -20,3 +22,15 @@ Smoothing
 - Kreisselmeier-Steinhauser constraint aggregation function
 - sigmoid blending
 - cubic/quintic polynomial blending
+
+### Install
+
+```julia
+] add FLOWMath
+```
+
+### Run Unit Tests
+
+```julia
+] test FLOWMath
+```
