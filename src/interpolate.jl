@@ -8,14 +8,14 @@ using OffsetArrays: OffsetVector
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
-struct Akima{TF1, TF2, T1<:AbstractVector{TF1}, T2<:AbstractVector{TF2}}
+struct Akima{TF1, TF2, TF3, T1<:AbstractVector{TF1}, T2<:AbstractVector{TF2}}
 
     xdata::T1
-    ydata::T2  # need to allow different types as ydata is often dual numbers where xdata is more often fixed (floats)
-    p0::Vector{TF2}
-    p1::Vector{TF2}
-    p2::Vector{TF2}
-    p3::Vector{TF2}
+    ydata::T2
+    p0::Vector{TF3}
+    p1::Vector{TF3}
+    p2::Vector{TF3}
+    p3::Vector{TF3}
 
 end
 
@@ -39,10 +39,10 @@ function Akima(xdata, ydata, delta_x=0.0)
     # setup
     eps = 1e-30
     n = length(xdata)
-    typey = eltype(ydata)
+    typexy = eltype(xdata[1]*ydata[1])
 
     # compute segment slopes
-    m = OffsetVector(zeros(typey, n+3), -1:n+1)
+    m = OffsetVector(zeros(typexy, n+3), -1:n+1)
     for i = 1:n-1
         m[i] = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
     end
@@ -54,7 +54,7 @@ function Akima(xdata, ydata, delta_x=0.0)
     m[n+1] = 2.0*m[n] - m[n-1]
 
     # slope at points
-    t = zeros(typey, n)
+    t = zeros(typexy, n)
     for i = 1:n
         m1 = m[i-2]
         m2 = m[i-1]
@@ -70,10 +70,10 @@ function Akima(xdata, ydata, delta_x=0.0)
     end
 
     # polynomial cofficients
-    p0 = zeros(typey, n-1)
-    p1 = zeros(typey, n-1)
-    p2 = zeros(typey, n-1)
-    p3 = zeros(typey, n-1)
+    p0 = zeros(typexy, n-1)
+    p1 = zeros(typexy, n-1)
+    p2 = zeros(typexy, n-1)
+    p3 = zeros(typexy, n-1)
     for i = 1:n-1
         dx = xdata[i+1] - xdata[i]
         t1 = t[i]
