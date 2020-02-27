@@ -8,14 +8,14 @@ using OffsetArrays: OffsetVector
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
-struct Akima{TF, T1<:AbstractVector{TF}, T2<:AbstractVector{TF}}
+struct Akima{TX, TY, TCoeff}
 
-    xdata::T1
-    ydata::T2
-    p0::Vector{TF}
-    p1::Vector{TF}
-    p2::Vector{TF}
-    p3::Vector{TF}
+    xdata::TX
+    ydata::TY
+    p0::Vector{TCoeff}
+    p1::Vector{TCoeff}
+    p2::Vector{TCoeff}
+    p3::Vector{TCoeff}
 
 end
 
@@ -34,14 +34,15 @@ This function, only performs construction of the spline, not evaluation.
 This is useful if you want to evaluate the same mesh at multiple different conditions.
 A convenience method exists below to perform both in one shot.
 """
-function Akima(xdata, ydata, delta_x=0.0)
+function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0) where {TFX, TFY}
 
     # setup
     eps = 1e-30
     n = length(xdata)
+    TCoeff = promote_type(TFX, TFY)
 
     # compute segment slopes
-    m = OffsetVector(zeros(n+3), -1:n+1)
+    m = OffsetVector(zeros(TCoeff, n+3), -1:n+1)
     for i = 1:n-1
         m[i] = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
     end
@@ -53,7 +54,7 @@ function Akima(xdata, ydata, delta_x=0.0)
     m[n+1] = 2.0*m[n] - m[n-1]
 
     # slope at points
-    t = zeros(n)
+    t = zeros(TCoeff, n)
     for i = 1:n
         m1 = m[i-2]
         m2 = m[i-1]
@@ -69,10 +70,10 @@ function Akima(xdata, ydata, delta_x=0.0)
     end
 
     # polynomial cofficients
-    p0 = zeros(n-1)
-    p1 = zeros(n-1)
-    p2 = zeros(n-1)
-    p3 = zeros(n-1)
+    p0 = zeros(TCoeff, n-1)
+    p1 = zeros(TCoeff, n-1)
+    p2 = zeros(TCoeff, n-1)
+    p3 = zeros(TCoeff, n-1)
     for i = 1:n-1
         dx = xdata[i+1] - xdata[i]
         t1 = t[i]
