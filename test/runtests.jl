@@ -484,7 +484,7 @@ ytest = [ -0.25,
 @test isapprox(y, ytest)
 # -------------------------
 
-# ---------- interpolate -------------
+# ---------- akima interpolate -------------
 
 x = 0:pi/4:2*pi
 y = sin.(x) 
@@ -530,5 +530,37 @@ J = ForwardDiff.jacobian(wrapper2, x)
 
 # ---------------------------
 
+# ----- linear interpolation ------
+xvec = [1.0, 2.0, 4.0, 5.0]
+yvec = [2.0, 3.0, 5.0, 8.0]
+
+y = linear(xvec, yvec, 1.0)
+@test y == 2.0
+y = linear(xvec, yvec, 1.5)
+@test y == 2.5
+y = linear(xvec, yvec, 3.0)
+@test y == 4.0
+y = linear(xvec, yvec, 4.5)
+@test y == 6.5
+y = linear(xvec, yvec, 5.0)
+@test y == 8.0
+
+y = linear(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
+@test y == [2.0, 2.5, 4.0, 6.5, 8.0]
+
+dydx = derivative(xvec, yvec, 1.0)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 1.5)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 3.0)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 4.5)
+@test dydx == 3.0
+dydx = derivative(xvec, yvec, 5.0)
+@test dydx == 3.0
+
+dydx = gradient(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
+@test dydx == [1.0, 1.0, 1.0, 3.0, 3.0]
+# ---------------------------
 
 end
