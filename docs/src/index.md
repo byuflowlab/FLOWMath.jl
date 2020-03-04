@@ -49,12 +49,7 @@ Interpolation is perhaps clearest through plotting so we'll load a plotting pack
 
 ```@example akima
 using PyPlot
-nothing # hide
-```
-
-
-```@example akima
-using FLOWMath: akima, Akima
+using FLOWMath: akima, Akima, derivative, gradient
 
 x = 0:pi/4:2*pi
 y = sin.(x)
@@ -98,6 +93,40 @@ nothing # hide
 ```@docs
 derivative
 gradient
+```
+
+
+### Linear Spline
+
+Linear interpolation is straightforward.  
+
+```@example linear
+using FLOWMath: linear, derivative, gradient
+
+xvec = [1.0, 2.0, 4.0, 5.0]
+yvec = [2.0, 3.0, 5.0, 8.0]
+
+y = linear(xvec, yvec, 1.5)
+```
+
+or we can evaluate at multiple points at once.
+
+```@example linear
+y = linear(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
+```
+
+```@docs
+linear
+```
+
+We can also compute derivatives and gradients just as we can for akima.
+
+```@example linear
+dydx = derivative(xvec, yvec, 1.5)
+```
+
+```@example linear
+dydx = gradient(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
 ```
 
 ### 2D/3D/4D Interpolation using Recursive 1D Interpolation

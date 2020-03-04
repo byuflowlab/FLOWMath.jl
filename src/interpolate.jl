@@ -5,6 +5,37 @@ Interpolation Methods
 
 using OffsetArrays: OffsetVector
 
+
+"""
+private function, find index in array where x would be inserted for interpolation
+between xvec[i] and xvec[i+1]
+"""
+function findindex(xvec, x)
+
+    n = length(xvec)
+    i = searchsortedlast(xvec, x)
+
+    # this version allows extrapolation
+    if i == 0
+        i = 1
+    elseif i == n
+        i = n - 1
+    end
+
+    # this version prevents extrapolation
+    # if i == 0
+    #     throw(DomainError(x, "x falls below range of provided spline data"))
+    # elseif i == n 
+    #     if x == xvec[n]
+    #         i = n - 1
+    #     else
+    #         throw(DomainError(x, "x falls above range of provided spline data"))
+    #     end
+    # end
+
+    return i
+end
+
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
@@ -89,14 +120,7 @@ end
 
 function (spline::Akima)(x::Number)
 
-    n = length(spline.xdata)
-
-    j = searchsortedlast(spline.xdata, x)
-    if j == 0
-        j = 1
-    elseif j == n
-        j = n - 1
-    end
+    j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
@@ -136,14 +160,7 @@ Computes the derivative of an Akima spline at x.
 """
 function derivative(spline::Akima, x)
 
-    n = length(spline.xdata)
-
-    j = searchsortedlast(spline.xdata, x)
-    if j == 0
-        j = 1
-    elseif j == n
-        j = n - 1
-    end
+    j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
@@ -165,6 +182,60 @@ Computes the gradient of a Akima spline at x.
 - `dydx::Vector{Float}`: gradient at x using akima spline.
 """
 gradient(spline::Akima, x) = derivative.(Ref(spline), x)
+
+
+# ------ Linear Interpolation  ---------
+
+"""
+    linear(xdata, ydata, x::Number)
+
+Linear interpolation.
+
+**Arguments**
+- `xdata::Vector{Float64}`: x data used in constructing interpolation
+- `ydata::Vector{Float64}`: y data used in constructing interpolation
+- `x::Float64`: point to evaluate spline at
+
+**Returns**
+- `y::Float64`: value at x using linear interpolation
+"""
+function linear(xdata, ydata, x::Number)
+
+    i = findindex(xdata, x)
+
+    # lienar interpolation
+    eta = (x - xdata[i]) / (xdata[i+1] - xdata[i])
+    y = ydata[i] + eta*(ydata[i+1] - ydata[i])
+
+    return y
+end
+
+"""
+    linear(xdata, ydata, x::AbstractVector)
+    
+Convenience function to perform linear interpolation at multiple points.
+"""
+linear(xdata, ydata, x::AbstractVector) = linear.(Ref(xdata), Ref(ydata), x)
+
+
+"""
+derivative of linear interpolation at `x::Number`
+"""
+function derivative(xdata, ydata, x)
+
+    i = findindex(xdata, x)
+    dydx = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
+
+    return dydx
+end
+
+"""
+gradient of linear interpolation at `x::Vector`
+"""
+gradient(xdata, ydata, x) = derivative.(Ref(xdata), Ref(ydata), x)
+
+
+# ------- higher order recursive 1D interpolation ------
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
