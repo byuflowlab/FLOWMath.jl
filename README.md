@@ -15,6 +15,7 @@ Root Finding
 
 Interpolation
 - Akima spline
+- linear interpolation
 - 2D/3D/4D interpolation from recursive 1D iterpolation
 
 Smoothing
