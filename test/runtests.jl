@@ -1,5 +1,7 @@
 using FLOWMath
 using Test
+import ForwardDiff
+using LinearAlgebra: diag
 
 @testset "FLOWMath.jl" begin
 
@@ -482,10 +484,10 @@ ytest = [ -0.25,
 @test isapprox(y, ytest)
 # -------------------------
 
-# ---------- interpolate -------------
+# ---------- akima interpolate -------------
 
 x = 0:pi/4:2*pi
-y = sin.(x)
+y = sin.(x) 
 xpt = 0:pi/16:2*pi
 
 ypt = akima(x, y, xpt)
@@ -494,7 +496,71 @@ ypt = akima(x, y, xpt)
 ytest = [0.0, 0.21394356492851746, 0.40088834764831843, 0.5641656518405971, 0.7071067811865475, 0.8281808021479407, 0.920495128834866, 0.9793385864009951, 1.0, 0.9873810649285174, 0.9419417382415921, 0.8523082377305078, 0.7071067811865476, 0.5303300858899105, 0.35355339059327384, 0.17677669529663714, 1.2246467991473532e-16, -0.17677669529663698, -0.35355339059327373, -0.5303300858899104, -0.7071067811865475, -0.8523082377305078, -0.941941738241592, -0.9873810649285175, -1.0, -0.9793385864009951, -0.9204951288348657, -0.8281808021479408, -0.7071067811865477, -0.5641656518405971, -0.400888347648319, -0.21394356492851788, 0.0]
 
 @test isapprox(ypt, ytest, atol=1e-8)
+
+spl = Akima(x, y)
+
+dydx = derivative(spl, pi/16)
+
+@test isapprox(dydx, 1.0180260961104746, atol=1e-12)
+
+dydx = gradient(spl, xpt)
+
+dydx_test = [1.1640128599466306, 1.0180260961104746, 0.889005522603991, 0.7769511394271804, 0.6818629465800423, 0.5473879346340718, 0.3889191062220746, 0.20645646134405082, 1.8419755006770065e-16, -0.13818978335121798, -0.33430576382780836, -0.5883479414297708, -0.900316316157106, -0.9003163161571062, -0.9003163161571062, -0.9003163161571061, -0.9003163161571061, -0.9003163161571064, -0.9003163161571064, -0.9003163161571065, -0.9003163161571061, -0.5883479414297709, -0.33430576382780913, -0.13818978335121862, -1.8419755006770062e-16, 0.20645646134405057, 0.3889191062220747, 0.5473879346340714, 0.6818629465800421, 0.7769511394271802, 0.8890055226039906, 1.0180260961104746, 1.1640128599466313]
+
+@test isapprox(dydx, dydx_test, atol=1e-12)
+
+# differentiate with dual numbers
+
+dydx = ForwardDiff.derivative(spl, pi/16)
+@test isapprox(dydx, 1.0180260961104746, atol=1e-12)
+
+J = ForwardDiff.jacobian(spl, xpt)
+dydx = diag(J)
+@test isapprox(dydx, dydx_test, atol=1e-12)
+
+# differentiate coordinates of spline
+# these don't test against numerical values (assumes forwarddiff works)
+# it is just a test that dual numbers are properly supported and that this runs without error.
+
+wrapper(y) = akima(x, y, xpt)
+J = ForwardDiff.jacobian(wrapper, y)
+
+wrapper2(x) = akima(x, y, xpt)
+J = ForwardDiff.jacobian(wrapper2, x)
+
 # ---------------------------
 
+# ----- linear interpolation ------
+xvec = [1.0, 2.0, 4.0, 5.0]
+yvec = [2.0, 3.0, 5.0, 8.0]
+
+y = linear(xvec, yvec, 1.0)
+@test y == 2.0
+y = linear(xvec, yvec, 1.5)
+@test y == 2.5
+y = linear(xvec, yvec, 3.0)
+@test y == 4.0
+y = linear(xvec, yvec, 4.5)
+@test y == 6.5
+y = linear(xvec, yvec, 5.0)
+@test y == 8.0
+
+y = linear(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
+@test y == [2.0, 2.5, 4.0, 6.5, 8.0]
+
+dydx = derivative(xvec, yvec, 1.0)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 1.5)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 3.0)
+@test dydx == 1.0
+dydx = derivative(xvec, yvec, 4.5)
+@test dydx == 3.0
+dydx = derivative(xvec, yvec, 5.0)
+@test dydx == 3.0
+
+dydx = gradient(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
+@test dydx == [1.0, 1.0, 1.0, 3.0, 3.0]
+# ---------------------------
 
 end

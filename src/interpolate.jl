@@ -5,17 +5,48 @@ Interpolation Methods
 
 using OffsetArrays: OffsetVector
 
+
+"""
+private function, find index in array where x would be inserted for interpolation
+between xvec[i] and xvec[i+1]
+"""
+function findindex(xvec, x)
+
+    n = length(xvec)
+    i = searchsortedlast(xvec, x)
+
+    # this version allows extrapolation
+    if i == 0
+        i = 1
+    elseif i == n
+        i = n - 1
+    end
+
+    # this version prevents extrapolation
+    # if i == 0
+    #     throw(DomainError(x, "x falls below range of provided spline data"))
+    # elseif i == n 
+    #     if x == xvec[n]
+    #         i = n - 1
+    #     else
+    #         throw(DomainError(x, "x falls above range of provided spline data"))
+    #     end
+    # end
+
+    return i
+end
+
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
-struct Akima{TF, T1<:AbstractVector{TF}, T2<:AbstractVector{TF}}
+struct Akima{TX, TY, TCoeff}
 
-    xdata::T1
-    ydata::T2
-    p0::Vector{TF}
-    p1::Vector{TF}
-    p2::Vector{TF}
-    p3::Vector{TF}
+    xdata::TX
+    ydata::TY
+    p0::Vector{TCoeff}
+    p1::Vector{TCoeff}
+    p2::Vector{TCoeff}
+    p3::Vector{TCoeff}
 
 end
 
@@ -34,15 +65,15 @@ This function, only performs construction of the spline, not evaluation.
 This is useful if you want to evaluate the same mesh at multiple different conditions.
 A convenience method exists below to perform both in one shot.
 """
-function Akima(xdata, ydata, delta_x=0.0)
+function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0) where {TFX, TFY}
 
     # setup
     eps = 1e-30
     n = length(xdata)
-    T = eltype(xdata)
+    TCoeff = promote_type(TFX, TFY)
 
     # compute segment slopes
-    m = OffsetVector(zeros(T, n+3), -1:n+1)
+    m = OffsetVector(zeros(TCoeff, n+3), -1:n+1)
     for i = 1:n-1
         m[i] = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
     end
@@ -54,7 +85,7 @@ function Akima(xdata, ydata, delta_x=0.0)
     m[n+1] = 2.0*m[n] - m[n-1]
 
     # slope at points
-    t = zeros(T, n)
+    t = zeros(TCoeff, n)
     for i = 1:n
         m1 = m[i-2]
         m2 = m[i-1]
@@ -70,10 +101,10 @@ function Akima(xdata, ydata, delta_x=0.0)
     end
 
     # polynomial cofficients
-    p0 = zeros(T, n-1)
-    p1 = zeros(T, n-1)
-    p2 = zeros(T, n-1)
-    p3 = zeros(T, n-1)
+    p0 = zeros(TCoeff, n-1)
+    p1 = zeros(TCoeff, n-1)
+    p2 = zeros(TCoeff, n-1)
+    p3 = zeros(TCoeff, n-1)
     for i = 1:n-1
         dx = xdata[i+1] - xdata[i]
         t1 = t[i]
@@ -89,10 +120,7 @@ end
 
 function (spline::Akima)(x::Number)
 
-    j = findlast(x .>= spline.xdata[1:end-1])
-    if j === nothing
-        j = 1
-    end
+    j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
@@ -107,7 +135,7 @@ end
     akima(x, y, xpt)
 
 A convenience method to perform construction and evaluation of the spline in one step.
-See docstring for Akima for more details.  
+See docstring for Akima for more details.
 
 **Arguments**
 - `x, y::Vector{Float}`: the node points
@@ -118,7 +146,96 @@ See docstring for Akima for more details.
 """
 akima(x, y, xpt) = Akima(x, y)(xpt)
 
+"""
+    derivative(spline, x)
 
+Computes the derivative of an Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Float`: the evaluation point(s)
+
+**Returns**
+- `dydx::Float`: derivative at x using akima spline.
+"""
+function derivative(spline::Akima, x)
+
+    j = findindex(spline.xdata, x)
+
+    # evaluate polynomial
+    dx = x - spline.xdata[j]
+    dydx = spline.p1[j] + 2*spline.p2[j]*dx + 3*spline.p3[j]*dx^2
+
+    return dydx
+end
+
+"""
+    gradient(spline, x)
+
+Computes the gradient of a Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Vector{Float}`: the evaluation point(s)
+
+**Returns**
+- `dydx::Vector{Float}`: gradient at x using akima spline.
+"""
+gradient(spline::Akima, x) = derivative.(Ref(spline), x)
+
+
+# ------ Linear Interpolation  ---------
+
+"""
+    linear(xdata, ydata, x::Number)
+
+Linear interpolation.
+
+**Arguments**
+- `xdata::Vector{Float64}`: x data used in constructing interpolation
+- `ydata::Vector{Float64}`: y data used in constructing interpolation
+- `x::Float64`: point to evaluate spline at
+
+**Returns**
+- `y::Float64`: value at x using linear interpolation
+"""
+function linear(xdata, ydata, x::Number)
+
+    i = findindex(xdata, x)
+
+    # lienar interpolation
+    eta = (x - xdata[i]) / (xdata[i+1] - xdata[i])
+    y = ydata[i] + eta*(ydata[i+1] - ydata[i])
+
+    return y
+end
+
+"""
+    linear(xdata, ydata, x::AbstractVector)
+    
+Convenience function to perform linear interpolation at multiple points.
+"""
+linear(xdata, ydata, x::AbstractVector) = linear.(Ref(xdata), Ref(ydata), x)
+
+
+"""
+derivative of linear interpolation at `x::Number`
+"""
+function derivative(xdata, ydata, x)
+
+    i = findindex(xdata, x)
+    dydx = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
+
+    return dydx
+end
+
+"""
+gradient of linear interpolation at `x::Vector`
+"""
+gradient(xdata, ydata, x) = derivative.(Ref(xdata), Ref(ydata), x)
+
+
+# ------- higher order recursive 1D interpolation ------
 
 """
    interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
