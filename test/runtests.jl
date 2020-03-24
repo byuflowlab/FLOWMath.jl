@@ -24,22 +24,22 @@ z = trapz(x, y)
 
 f(x) = x^2 - 1.0
 
-xstar = brent(f, -2.0, 0)
+xstar, _ = brent(f, -2.0, 0)
 @test xstar == -1.0
-xstar = brent(f, 0.0, 2)
+xstar, _ = brent(f, 0.0, 2)
 @test xstar == 1.0
 
 f(x) = x^3 - 1
-xstar = brent(f, 0, 3)
+xstar, _ = brent(f, 0, 3)
 @test xstar == 1.0
 
 f(x) = sin(x)
 atol = 2e-12
-xstar = brent(f, 1, 4, atol=atol)
+xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
 
 atol = 1e-15
-xstar = brent(f, 1, 4, atol=atol)
+xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
 
 # -------------------------
