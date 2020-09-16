@@ -1,6 +1,7 @@
 using FLOWMath
 using Test
 import ForwardDiff
+import FiniteDiff
 using LinearAlgebra: diag
 
 @testset "FLOWMath.jl" begin
