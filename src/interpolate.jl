@@ -4,7 +4,6 @@ Interpolation Methods
 =#
 
 using OffsetArrays: OffsetVector
-using Infiltrator
 
 
 """
