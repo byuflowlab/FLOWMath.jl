@@ -259,14 +259,20 @@ function interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
     ny = length(ydata)
     nxpt = length(xpt)
     nypt = length(ypt)
-    yinterp = zeros(ny, nxpt)
-    output = zeros(nxpt, nypt)
+
+    if eltype(ypt) != Float64
+        R = eltype(ypt)
+    else
+        R = eltype(xpt)
+    end
+    yinterp = Array{R}(undef, ny, nxpt)
+    output = Array{R}(undef, nxpt, nypt)
 
     for i = 1:ny
-        yinterp[i, :] = interp1d(xdata, fdata[:, i], xpt)
+        yinterp[i, :] .= interp1d(xdata, fdata[:, i], xpt)
     end
     for i = 1:nxpt
-        output[i, :] = interp1d(ydata, yinterp[:, i], ypt)
+        output[i, :] .= interp1d(ydata, yinterp[:, i], ypt)
     end
 
 
@@ -284,15 +290,25 @@ function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
     nxpt = length(xpt)
     nypt = length(ypt)
     nzpt = length(zpt)
-    zinterp = zeros(nz, nxpt, nypt)
-    output = zeros(nxpt, nypt, nzpt)
+
+    if eltype(xpt) != Float64
+        R = eltype(xpt)
+    elseif eltype(ypt) != Float64
+        R = eltype(ypt)
+    elseif eltype(zpt) != Float64
+        R = eltype(zpt)
+    else
+        R = Float64
+    end
+    zinterp = Array{eltype(R)}(undef, nz, nxpt, nypt)
+    output = Array{eltype(R)}(undef, nxpt, nypt, nzpt)
 
     for i = 1:nz
-        zinterp[i, :, :] = interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
+        zinterp[i, :, :] .= interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
     end
     for j = 1:nypt
         for i = 1:nxpt
-            output[i, j, :] = interp1d(zdata, zinterp[:, i, j], zpt)
+            output[i, j, :] .= interp1d(zdata, zinterp[:, i, j], zpt)
         end
     end
 
