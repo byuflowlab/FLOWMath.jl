@@ -622,13 +622,13 @@ wrapper(x) = interp3d(interp1d, xdata, ydata, zdata, fdata, x, 2.0, 3.0)
 J = ForwardDiff.derivative(wrapper, 1.5)
 J = ForwardDiff.jacobian(wrapper, [1.5; 2.5; 3.5])
 
-# wrapper2(y) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, y, 3.0)
-# J = ForwardDiff.derivative(wrapper2, 5.0)
-# J = ForwardDiff.jacobian(wrapper2, [3.0; 5.0; 7.0])
+wrapper2(y) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, y, 3.0)
+J = ForwardDiff.derivative(wrapper2, 5.0)
+J = ForwardDiff.jacobian(wrapper2, [3.0; 5.0; 7.0])
 
-# wrapper3(z) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 2.0, z)
-# J = ForwardDiff.derivative(wrapper3, 8.0)
-# J = ForwardDiff.jacobian(wrapper3, [4.0; 6.0; 8.0])
+wrapper3(z) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 2.0, z)
+J = ForwardDiff.derivative(wrapper3, 8.0)
+J = ForwardDiff.jacobian(wrapper3, [4.0; 6.0; 8.0])
 # ---------------------------
 
 end
