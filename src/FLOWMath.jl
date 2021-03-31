@@ -1,5 +1,8 @@
 module FLOWMath
 
+include("cs_safe.jl")
+export abs_cs_safe
+
 include("quadrature.jl")
 export trapz
 
