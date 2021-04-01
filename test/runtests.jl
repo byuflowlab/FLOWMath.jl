@@ -1,6 +1,7 @@
 using FLOWMath
 using Test
 import ForwardDiff
+import FiniteDiff
 using LinearAlgebra: diag
 
 @testset "FLOWMath.jl" begin
@@ -24,22 +25,22 @@ z = trapz(x, y)
 
 f(x) = x^2 - 1.0
 
-xstar = brent(f, -2.0, 0)
+xstar, _ = brent(f, -2.0, 0)
 @test xstar == -1.0
-xstar = brent(f, 0.0, 2)
+xstar, _ = brent(f, 0.0, 2)
 @test xstar == 1.0
 
 f(x) = x^3 - 1
-xstar = brent(f, 0, 3)
+xstar, _ = brent(f, 0, 3)
 @test xstar == 1.0
 
 f(x) = sin(x)
 atol = 2e-12
-xstar = brent(f, 1, 4, atol=atol)
+xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
 
 atol = 1e-15
-xstar = brent(f, 1, 4, atol=atol)
+xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
 
 # -------------------------
@@ -519,14 +520,16 @@ dydx = diag(J)
 @test isapprox(dydx, dydx_test, atol=1e-12)
 
 # differentiate coordinates of spline
-# these don't test against numerical values (assumes forwarddiff works)
-# it is just a test that dual numbers are properly supported and that this runs without error.
 
-wrapper(y) = akima(x, y, xpt)
+wrapper(y) = Akima(x, y, 0.1)(xpt)
 J = ForwardDiff.jacobian(wrapper, y)
+J2 = FiniteDiff.finite_difference_jacobian(wrapper, y)
+@test maximum(abs.(J - J2)) < 1e-6
 
-wrapper2(x) = akima(x, y, xpt)
+wrapper2(y) = Akima(x, y, 0.1)(xpt)
 J = ForwardDiff.jacobian(wrapper2, x)
+J2 = FiniteDiff.finite_difference_jacobian(wrapper2, x)
+@test maximum(abs.(J - J2)) < 1e-6
 
 # ---------------------------
 

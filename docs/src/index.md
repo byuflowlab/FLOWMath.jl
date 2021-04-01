@@ -30,7 +30,7 @@ Brent's method is an effective 1D root finding method as it combines bracketing 
 using FLOWMath: brent
 
 f(x) = x^2 - 1.0
-xstar = brent(f, -2.0, 0)
+xstar, outputs = brent(f, -2.0, 0)
 ```
 
 The above example shows basic usage.  Additional inputs and outputs are available as described below.

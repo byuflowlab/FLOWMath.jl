@@ -4,7 +4,7 @@
 
 
 """
-    brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
+    brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100)
 
 1D root finding using Brent's method.  Based off the brentq implementation in scipy.
 
@@ -15,17 +15,15 @@
 - `atol::Float`: absolute tolerance (positive) for root
 - `rtol::Float`: relative tolerance for root
 - `maxiter::Int`: maximum number of iterations allowed
-- `full_output::Bool`: flag to indicate whether you want just the root, or the root with a 
-    second argument (tuple) containing the number of iterations, function calls, and a convergence message.
 
 **Returns**
 - `xstar::Float`: a root of f
-- `info::Tuple`: returned if `full_output=True`.  A named tuple containing:
+- `info::Tuple`: A named tuple containing:
     - `iter::Int`: number of iterations
     - 'fcalls::Int`: number of function calls
     - 'flag::String`: a convergence/error message.
 """
-function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_output=false)
+function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100)
 
     xpre = a; xcur = b
     # xblk = 0.0; fblk = 0.0; spre = 0.0; scur = 0.0
@@ -39,20 +37,20 @@ function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_out
     
     if fpre*fcur > 0
         error_num = "SIGNERR"
-        return _pack_brent_results(0.0, iterations, funcalls, error_num, full_output)
+        return 0.0, (iter=iterations, fcalls=funcalls, flag=error_num)
     end
     if fpre == zero(fpre)
         error_num = "CONVERGED"
-        return _pack_brent_results(xpre, iterations, funcalls, error_num, full_output)
+        return xpre, (iter=iterations, fcalls=funcalls, flag=error_num)
     end
     if fcur == zero(fcur)
         error_num = "CONVERGED"
-        return _pack_brent_results(xcur, iterations, funcalls, error_num, full_output)
+        return xcur, (iter=iterations, fcalls=funcalls, flag=error_num)
     end
 
     for i = 1:maxiter
         iterations += 1
-        if fpre*fcur < 0 
+        if fpre*fcur < 0
             xblk = xpre
             fblk = fpre
             spre = scur = xcur - xpre
@@ -71,7 +69,7 @@ function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_out
         sbis = (xblk - xcur)/2
         if fcur == zero(fcur) || abs(sbis) < delta
             error_num = "CONVERGED"
-            return _pack_brent_results(xcur, iterations, funcalls, error_num, full_output) 
+            return xcur, (iter=iterations, fcalls=funcalls, flag=error_num)
         end
 
         if abs(spre) > delta && abs(fcur) < abs(fpre)
@@ -110,21 +108,8 @@ function brent(f, a, b; args=(), atol=2e-12, rtol=4*eps(), maxiter=100, full_out
         funcalls += 1
     end
     error_num = "CONVERR"
-    return _pack_brent_results(xcur, iterations, funcalls, error_num, full_output)
+    return xcur, (iter=iterations, fcalls=funcalls, flag=error_num)
 end
 
 # TODO AN: replace w/ newer Brent method and automatic bracketing?
 
-
-"""
-private method
-
-pack up results from brent method
-"""
-function _pack_brent_results(x, iter, fcalls, flag, full_output)
-    if full_output
-        return x, (iter=iter, fcalls=fcalls, flag=flag)
-    else
-        return x
-    end
-end
