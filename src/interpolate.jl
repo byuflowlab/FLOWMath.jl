@@ -260,11 +260,8 @@ function interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
     nxpt = length(xpt)
     nypt = length(ypt)
 
-    if eltype(ypt) != Float64
-        R = eltype(ypt)
-    else
-        R = eltype(xpt)
-    end
+    R = promote_type(eltype(xpt), eltype(ypt))
+
     yinterp = Array{R}(undef, ny, nxpt)
     output = Array{R}(undef, nxpt, nypt)
 
@@ -291,17 +288,9 @@ function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
     nypt = length(ypt)
     nzpt = length(zpt)
 
-    if eltype(xpt) != Float64
-        R = eltype(xpt)
-    elseif eltype(ypt) != Float64
-        R = eltype(ypt)
-    elseif eltype(zpt) != Float64
-        R = eltype(zpt)
-    else
-        R = Float64
-    end
-    zinterp = Array{eltype(R)}(undef, nz, nxpt, nypt)
-    output = Array{eltype(R)}(undef, nxpt, nypt, nzpt)
+    R = promote_type(eltype(xpt), eltype(ypt), eltype(zpt))
+    zinterp = Array{R}(undef, nz, nxpt, nypt)
+    output = Array{R}(undef, nxpt, nypt, nzpt)
 
     for i = 1:nz
         zinterp[i, :, :] .= interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
@@ -328,16 +317,18 @@ function interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, xpt, ypt, zpt, tp
     nypt = length(ypt)
     nzpt = length(zpt)
     ntpt = length(tpt)
-    tinterp = zeros(nt, nxpt, nypt, nzpt)
-    output = zeros(nxpt, nypt, nzpt, ntpt)
+
+    R = promote_type(eltype(xpt), eltype(ypt), eltype(zpt), eltype(tpt))
+    tinterp = Array{R}(undef, nt, nxpt, nypt, nzpt)
+    output = Array{R}(undef, nxpt, nypt, nzpt, ntpt)
 
     for i = 1:nt
-        tinterp[i, :, :, :] = interp3d(interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt)
+        tinterp[i, :, :, :] .= interp3d(interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt)
     end
     for k = 1:nzpt
         for j = 1:nypt
             for i = 1:nxpt
-                output[i, j, k, :] = interp1d(tdata, tinterp[:, i, j, k], tpt)
+                output[i, j, k, :] .= interp1d(tdata, tinterp[:, i, j, k], tpt)
             end
         end
     end
