@@ -259,14 +259,17 @@ function interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
     ny = length(ydata)
     nxpt = length(xpt)
     nypt = length(ypt)
-    yinterp = zeros(ny, nxpt)
-    output = zeros(nxpt, nypt)
+
+    R = promote_type(eltype(xpt), eltype(ypt))
+
+    yinterp = Array{R}(undef, ny, nxpt)
+    output = Array{R}(undef, nxpt, nypt)
 
     for i = 1:ny
-        yinterp[i, :] = interp1d(xdata, fdata[:, i], xpt)
+        yinterp[i, :] .= interp1d(xdata, fdata[:, i], xpt)
     end
     for i = 1:nxpt
-        output[i, :] = interp1d(ydata, yinterp[:, i], ypt)
+        output[i, :] .= interp1d(ydata, yinterp[:, i], ypt)
     end
 
 
@@ -284,15 +287,17 @@ function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
     nxpt = length(xpt)
     nypt = length(ypt)
     nzpt = length(zpt)
-    zinterp = zeros(nz, nxpt, nypt)
-    output = zeros(nxpt, nypt, nzpt)
+
+    R = promote_type(eltype(xpt), eltype(ypt), eltype(zpt))
+    zinterp = Array{R}(undef, nz, nxpt, nypt)
+    output = Array{R}(undef, nxpt, nypt, nzpt)
 
     for i = 1:nz
-        zinterp[i, :, :] = interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
+        zinterp[i, :, :] .= interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
     end
     for j = 1:nypt
         for i = 1:nxpt
-            output[i, j, :] = interp1d(zdata, zinterp[:, i, j], zpt)
+            output[i, j, :] .= interp1d(zdata, zinterp[:, i, j], zpt)
         end
     end
 
@@ -312,16 +317,18 @@ function interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, xpt, ypt, zpt, tp
     nypt = length(ypt)
     nzpt = length(zpt)
     ntpt = length(tpt)
-    tinterp = zeros(nt, nxpt, nypt, nzpt)
-    output = zeros(nxpt, nypt, nzpt, ntpt)
+
+    R = promote_type(eltype(xpt), eltype(ypt), eltype(zpt), eltype(tpt))
+    tinterp = Array{R}(undef, nt, nxpt, nypt, nzpt)
+    output = Array{R}(undef, nxpt, nypt, nzpt, ntpt)
 
     for i = 1:nt
-        tinterp[i, :, :, :] = interp3d(interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt)
+        tinterp[i, :, :, :] .= interp3d(interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt)
     end
     for k = 1:nzpt
         for j = 1:nypt
             for i = 1:nxpt
-                output[i, j, k, :] = interp1d(tdata, tinterp[:, i, j, k], tpt)
+                output[i, j, k, :] .= interp1d(tdata, tinterp[:, i, j, k], tpt)
             end
         end
     end

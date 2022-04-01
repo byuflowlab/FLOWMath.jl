@@ -533,7 +533,7 @@ J2 = FiniteDiff.finite_difference_jacobian(wrapper2, x)
 
 # ---------------------------
 
-# ----- linear interpolation ------
+# ----- 1D linear interpolation ------
 xvec = [1.0, 2.0, 4.0, 5.0]
 yvec = [2.0, 3.0, 5.0, 8.0]
 
@@ -564,6 +564,121 @@ dydx = derivative(xvec, yvec, 5.0)
 
 dydx = gradient(xvec, yvec, [1.0, 1.5, 3.0, 4.5, 5.0])
 @test dydx == [1.0, 1.0, 1.0, 3.0, 3.0]
+
+# ---------------------------
+
+# ----- 2D linear interpolation -----
+xdata = [1.0, 2.0, 3.0, 4.0]
+ydata = [2.0, 4.0, 6.0, 8.0]
+fdata = [1.0 2.0 3.0 4.0;
+        5.0 6.0 7.0 8.0;
+        9.0 10.0 11.0 12.0;
+        13.0 14.0 15.0 16.0]
+interp1d = linear
+
+f = interp2d(interp1d, xdata, ydata, fdata, 1.0, 2.0)
+@test f[1,1] == 1.0
+f = interp2d(interp1d, xdata, ydata, fdata, 1.5, 2.0)
+@test f[1,1] == 3.0
+f = interp2d(interp1d, xdata, ydata, fdata, 3.5, 5.0)
+@test f[1,1] == 12.5
+
+# with ForwardDiff
+wrapper(x) = interp2d(interp1d, xdata, ydata, fdata, x, 5.0)
+J = ForwardDiff.derivative(wrapper, 2.5)
+J = ForwardDiff.jacobian(wrapper, [2.5, 3.0, 4.0])
+
+wrapper2(y) = interp2d(interp1d, xdata, ydata, fdata, 2.5, y)
+J = ForwardDiff.derivative(wrapper2, 3.0)
+J = ForwardDiff.jacobian(wrapper2, [3.0, 5.0, 7.0])
+
+# ---------------------------
+
+# ----- 3D linear interpolation -----
+xdata = [1.0, 2.0, 3.0, 4.0]
+ydata = [2.0, 4.0, 6.0, 8.0]
+zdata = [3.0, 5.0, 7.0, 9.0]
+
+fdata = zeros(4, 4, 4)
+fdata[:,:,1] = [1.0 2.0 3.0 4.0;
+                5.0 6.0 7.0 8.0;
+                9.0 10.0 11.0 12.0;
+                13.0 14.0 15.0 16.0]
+fdata[:,:,2] = fdata[:,:,1] .+ 1
+fdata[:,:,3] = fdata[:,:,1] .+ 2
+fdata[:,:,4] = fdata[:,:,1] .+ 3
+interp1d = linear
+
+f = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 2.0, 3.0)
+@test f[1,1,1] == 1.0
+f = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.5, 2.0, 3.0)
+@test f[1,1,1] == 3.0
+f = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 3.0, 3.0)
+@test f[1,1,1] == 1.5
+f = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 2.0, 6.0)
+@test f[1,1,1] == 2.5
+f = interp3d(interp1d, xdata, ydata, zdata, fdata, 3.5, 5.0, 4.0)
+@test f[1,1,1] == 13.0
+
+# with ForwardDiff
+wrapper(x) = interp3d(interp1d, xdata, ydata, zdata, fdata, x, 2.0, 3.0)
+J = ForwardDiff.derivative(wrapper, 1.5)
+J = ForwardDiff.jacobian(wrapper, [1.5; 2.5; 3.5])
+
+wrapper2(y) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, y, 3.0)
+J = ForwardDiff.derivative(wrapper2, 5.0)
+J = ForwardDiff.jacobian(wrapper2, [3.0; 5.0; 7.0])
+
+wrapper3(z) = interp3d(interp1d, xdata, ydata, zdata, fdata, 1.0, 2.0, z)
+J = ForwardDiff.derivative(wrapper3, 8.0)
+J = ForwardDiff.jacobian(wrapper3, [4.0; 6.0; 8.0])
+# ---------------------------
+
+# ----- 4D linear interpolation -----
+xdata = [1.0, 2.0, 3.0, 4.0]
+ydata = [2.0, 4.0, 6.0, 8.0]
+zdata = [3.0, 5.0, 7.0, 9.0]
+tdata = [0.0, 1.0, 1.5, 2.0]
+
+fdata = zeros(4, 4, 4, 4)
+fdata[:,:,1,1] = [1.0 2.0 3.0 4.0;
+                  5.0 6.0 7.0 8.0;
+                  9.0 10.0 11.0 12.0;
+                  13.0 14.0 15.0 16.0]
+for i in 1:4
+    for j = 1:4
+        fdata[:,:,i,j] = fdata[:,:,1,1] .+ (i-1) .+ (j-1)
+    end
+end
+interp1d = linear
+
+f = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 2.0, 3.0, 0.5)
+@test f[1,1,1,1] == 1.5
+f = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.5, 2.0, 3.0, 1.0)
+@test f[1,1,1,1] == 4.0
+f = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 3.0, 3.0, 0.0)
+@test f[1,1,1,1] == 1.5
+f = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 2.0, 6.0, 1.5)
+@test f[1,1,1,1] == 4.5
+f = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 3.5, 5.0, 4.0, 1.75)
+@test f[1,1,1,1] == 15.5
+
+# with ForwardDiff
+wrapper(x) = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, x, 2.0, 3.0, 1.0)
+J = ForwardDiff.derivative(wrapper, 1.5)
+J = ForwardDiff.jacobian(wrapper, [1.5; 2.5; 3.5])
+
+wrapper2(y) = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, y, 3.0, 1.0)
+J = ForwardDiff.derivative(wrapper2, 5.0)
+J = ForwardDiff.jacobian(wrapper2, [3.0; 5.0; 7.0])
+
+wrapper3(z) = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 2.0, z, 1.0)
+J = ForwardDiff.derivative(wrapper3, 8.0)
+J = ForwardDiff.jacobian(wrapper3, [4.0; 6.0; 8.0])
+
+wrapper4(t) = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 2.0, 3.0, t)
+J = ForwardDiff.derivative(wrapper4, 8.0)
+J = ForwardDiff.jacobian(wrapper4, [3.0; 2.0; 1.0])
 # ---------------------------
 
 end
