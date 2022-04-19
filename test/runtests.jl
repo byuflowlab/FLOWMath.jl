@@ -526,10 +526,16 @@ J = ForwardDiff.jacobian(wrapper, y)
 J2 = FiniteDiff.finite_difference_jacobian(wrapper, y)
 @test maximum(abs.(J - J2)) < 1e-6
 
+J2 = FiniteDiff.finite_difference_jacobian(wrapper, y, Val(:complex))
+@test maximum(abs.(J - J2)) < 1e-12
+
 wrapper2(y) = Akima(x, y, 0.1)(xpt)
 J = ForwardDiff.jacobian(wrapper2, x)
 J2 = FiniteDiff.finite_difference_jacobian(wrapper2, x)
 @test maximum(abs.(J - J2)) < 1e-6
+
+J2 = FiniteDiff.finite_difference_jacobian(wrapper2, x, Val(:complex))
+@test maximum(abs.(J - J2)) < 1e-12
 
 # ---------------------------
 

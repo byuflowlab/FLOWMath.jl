@@ -10,10 +10,10 @@ Typically usage is with gradient-based optimization.
 """
 function abs_smooth(x, delta_x)
 
-    if x < delta_x && x > -delta_x
+    if real(x) < delta_x && real(x) > -delta_x
         return x^2/(2*delta_x) + delta_x/2
     else
-        return abs(x)
+        return abs_cs_safe(x)
     end
 
 end

@@ -13,7 +13,7 @@ between xvec[i] and xvec[i+1]
 function findindex(xvec, x)
 
     n = length(xvec)
-    i = searchsortedlast(xvec, x)
+    i = searchsortedlast(real(xvec), real(x))
 
     # this version allows extrapolation
     if i == 0
@@ -93,7 +93,7 @@ function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0
         m4 = m[i+1]
         w1 = abs_smooth(m4 - m3, delta_x)
         w2 = abs_smooth(m2 - m1, delta_x)
-        if (w1 < eps && w2 < eps)
+        if (real(w1) < eps && real(w2) < eps)
             t[i] = 0.5*(m2 + m3)  # special case to avoid divide by zero
         else
             t[i] = (w1*m2 + w2*m3) / (w1 + w2)
