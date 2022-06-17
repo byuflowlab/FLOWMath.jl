@@ -334,3 +334,23 @@ savefig("cubic.svg"); nothing # hide
 cubic_blend
 quintic_blend
 ```
+
+### Complex-step safe functions
+The [complex-step derivative approximation](https://doi.org/10.1145/838250.838251) can be used to easily and accurately approximate first derivatives.
+However, the function `f` one wishes to differentiate must be composed of functions that are compatible with the method.
+Most elementary functions are, but a few common ones are not:
+
+  * `abs`
+  * `abs2`
+  * `norm`
+  * `dot`
+
+FLOWMath provides complex-step safe versions of these functions.
+These functions use Julia's multiple dispatch to fall back on the standard implementations when given real arguments, and so shouldn't impose any performance penalty when they are not used with the complex step method.
+
+```@docs
+abs_cs_safe
+abs2_cs_safe
+norm_cs_safe
+dot_cs_safe
+```
