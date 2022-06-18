@@ -24,6 +24,13 @@ Smoothing
 - sigmoid blending
 - cubic/quintic polynomial blending
 
+[Complex step safe](https://doi.org/10.1145/838250.838251) versions of
+- `abs`: `abs_cs_safe`
+- `abs2`: `abs2_cs_safe`
+- `norm`: `norm_cs_safe`
+- `dot`: `dot_cs_safe`
+- `atan` (two argument form): `atan_cs_safe`
+
 ### Install
 
 ```julia

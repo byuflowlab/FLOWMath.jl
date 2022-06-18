@@ -70,3 +70,36 @@ end
 @inline function dot_cs_safe(a, b)
     return dot(a, b)
 end
+
+
+"""
+    atan_cs_safe(y, x)
+
+Calculate the two-argument arctangent function in a manner compatible with the complex-step derivative approximation.
+
+See also: [`atan`](@ref).
+"""
+atan_cs_safe
+
+@inline function atan_cs_safe(y, x)
+    return atan_cs_safe(promote(y, x)...)
+end
+
+@inline function atan_cs_safe(y::T, x::T) where {T<:Complex}
+    # Stolen from openmdao/utils/cs_safe.py
+	# a = np.real(y)
+	# b = np.imag(y)
+	# c = np.real(x)
+	# d = np.imag(x)
+	# return np.arctan2(a, c) + 1j * (c * b - a * d) / (a**2 + c**2)
+    a = real(y)
+    b = imag(y)
+    c = real(x)
+    d = imag(x)
+    return complex(atan(a, c), (c * b - a * d) / (a^2 + c^2))
+end
+
+@inline function atan_cs_safe(y::T, x::T) where {T}
+    return atan(y, x)
+end
+

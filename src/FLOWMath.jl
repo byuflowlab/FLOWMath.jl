@@ -4,6 +4,7 @@ include("cs_safe.jl")
 export abs_cs_safe, abs2_cs_safe
 export norm_cs_safe
 export dot_cs_safe
+export atan_cs_safe
 
 include("quadrature.jl")
 export trapz
