@@ -5,8 +5,4 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-# Bug introduced in FiniteDiff v2.11.1 that prevents passing range-type
-# arguments (like `StepRangeLen`) to
-# finite_difference_jacobian, which should be fixed by
-# https://github.com/JuliaDiff/FiniteDiff.jl/pull/137, aka future version 2.12.2.
-FiniteDiff = "< 2.11.1"
+FiniteDiff = "2.13"
