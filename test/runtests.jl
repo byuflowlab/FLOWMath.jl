@@ -2,10 +2,92 @@ using FLOWMath
 using Test
 import ForwardDiff
 import FiniteDiff
-using LinearAlgebra: diag
+using LinearAlgebra: diag, norm, dot
 
 @testset "FLOWMath.jl" begin
 
+# ------ complex-step safe --------
+#
+# abs_cs_safe
+f(x) = 2*cos(abs(x)) + 3*sin(x)
+f_cs_safe(x) = 2*cos(abs_cs_safe(x)) + 3*sin(x)
+# Check for positive and negative arguments to abs_cs_safe.
+for x0 in [2.5, -2.5]
+    @test f_cs_safe(x0) ≈ f(x0)
+    dfdx_fd = ForwardDiff.derivative(f_cs_safe, x0)
+    dfdx_cs = FiniteDiff.finite_difference_derivative(f_cs_safe, x0, Val{:complex})
+    dfdx_not_cs_safe = FiniteDiff.finite_difference_derivative(f, x0, Val{:complex})
+    @test dfdx_cs ≈ dfdx_fd
+    @test !(dfdx_not_cs_safe ≈ dfdx_fd)
+end
+
+# abs2_cs_safe
+f(x) = 2*cos(abs2(x)) + 3*sin(x)
+f_cs_safe(x) = 2*cos(abs2_cs_safe(x)) + 3*sin(x)
+for x0 in [2.5, -2.5]
+    @test f_cs_safe(x0) ≈ f(x0)
+    dfdx_fd = ForwardDiff.derivative(f_cs_safe, x0)
+    dfdx_cs = FiniteDiff.finite_difference_derivative(f_cs_safe, x0, Val{:complex})
+    dfdx_not_cs_safe = FiniteDiff.finite_difference_derivative(f, x0, Val{:complex})
+    @test dfdx_cs ≈ dfdx_fd
+    @test !(dfdx_not_cs_safe ≈ dfdx_fd)
+end
+
+# norm_cs_safe
+f(x, p) = norm(2 .* cos.(x) .+ 3 .* sin.(x), p)
+f_cs_safe(x, p) = norm_cs_safe(2 .* cos.(x) .+ 3 .* sin.(x), p)
+x0 = rand(3, 4)
+for p in [1, 2, 3]
+    fp(x) = f(x, p)
+    fp_cs_safe(x) = f_cs_safe(x, p)
+    @test fp_cs_safe(x0) ≈ fp(x0)
+    dfdx_fd = ForwardDiff.gradient(fp_cs_safe, x0)
+    dfdx_cs = FiniteDiff.finite_difference_gradient(fp_cs_safe, x0, Val{:complex})
+    dfdx_not_cs_safe = FiniteDiff.finite_difference_gradient(fp, x0, Val{:complex})
+    @test dfdx_cs ≈ dfdx_fd
+    @test !(dfdx_not_cs_safe ≈ dfdx_fd)
+end
+
+# dot_cs_safe
+f(x) = 3*dot(x, sin.(x))^2
+f_cs_safe(x) = 3*dot_cs_safe(x, sin.(x))^2
+x0 = rand(4)
+@test f_cs_safe(x0) ≈ f(x0)
+dfdx_fd = ForwardDiff.gradient(f_cs_safe, x0)
+dfdx_cs = FiniteDiff.finite_difference_gradient(f_cs_safe, x0, Val{:complex})
+dfdx_not_cs_safe = FiniteDiff.finite_difference_gradient(f, x0, Val{:complex})
+@test dfdx_cs ≈ dfdx_fd
+@test !(dfdx_not_cs_safe ≈ dfdx_fd)
+
+# Test that we don't need to modify the second argument to `dot`:
+y = rand(4)
+f(x) = 3*dot(y, x)^2
+f_cs_safe(x) = 3*dot_cs_safe(y, x)^2
+x0 = rand(4)
+@test f_cs_safe(x0) ≈ f(x0)
+dfdx_fd = ForwardDiff.gradient(f_cs_safe, x0)
+dfdx_cs = FiniteDiff.finite_difference_gradient(f_cs_safe, x0, Val{:complex})
+dfdx_not_cs_safe = FiniteDiff.finite_difference_gradient(f, x0, Val{:complex})
+@test dfdx_cs ≈ dfdx_fd
+# Using a real input to the first argument of dot is actually complex-step safe, so these should be the same.
+@test dfdx_not_cs_safe ≈ dfdx_fd
+
+# two-argument atan_cs_safe
+# Need to test all four quadrants for atan.
+f(sign1,sign2) = x->3*atan(sign1*(x+2), sign2*x)^2
+f_cs_safe(sign1,sign2) = x->3*atan_cs_safe(sign1*(x+2), sign2*x)^2
+for sign1 in [-1, 1]
+    for sign2 in [-1, 1]
+        fs1s2 = f(sign1, sign2)
+        fs1s2_cs_safe = f_cs_safe(sign1, sign2)
+        x0 = rand()
+        @test fs1s2_cs_safe(x0) ≈ fs1s2(x0)
+        dfdx_fd = ForwardDiff.derivative(fs1s2, x0)
+        dfdx_cs = FiniteDiff.finite_difference_derivative(fs1s2_cs_safe, x0, Val{:complex})
+        @test dfdx_cs ≈ dfdx_fd
+        # Can't check that the non-complex-step-safe version of atan doesn't work since it's not implemented for two complex arguments.
+    end
+end
 
 # ------ trapz --------
 # tests from matlab trapz docs
