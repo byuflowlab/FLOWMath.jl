@@ -586,7 +586,7 @@ dydx = derivative(spl, pi/16)
 
 @test isapprox(dydx, 1.0180260961104746, atol=1e-12)
 
-d2ydx2 = derivative2(spl, pi/16)
+d2ydx2 = second_derivative(spl, pi/16)
 
 @test isapprox(d2ydx2, -0.7003004339939436, atol=1e-12)
 
