@@ -24,6 +24,7 @@ export quintic_blend
 include("interpolate.jl")
 export Akima
 export derivative
+export derivative2
 export gradient
 export akima
 export linear
