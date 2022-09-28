@@ -170,7 +170,7 @@ function derivative(spline::Akima, x)
 end
 
 """
-    derivative2(spline, x)
+    second_derivative(spline, x)
 
 Computes the second derivative of an Akima spline at x.
 
@@ -181,7 +181,7 @@ Computes the second derivative of an Akima spline at x.
 **Returns**
 - `d2ydx2::Float`: second derivative at x using akima spline.
 """
-function derivative2(spline::Akima, x)
+function second_derivative(spline::Akima, x)
 
     j = findindex(spline.xdata, x)
 
