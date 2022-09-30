@@ -170,6 +170,29 @@ function derivative(spline::Akima, x)
 end
 
 """
+    second_derivative(spline, x)
+
+Computes the second derivative of an Akima spline at x.
+
+**Arguments**
+- `spline::Akima}`: an Akima spline
+- `x::Float`: the evaluation point(s)
+
+**Returns**
+- `d2ydx2::Float`: second derivative at x using akima spline.
+"""
+function second_derivative(spline::Akima, x)
+
+    j = findindex(spline.xdata, x)
+
+    # evaluate polynomial
+    dx = x - spline.xdata[j]
+    d2ydx2 = 2.0*spline.p2[j] + 6.0*spline.p3[j]*dx
+
+    return d2ydx2
+end
+
+"""
     gradient(spline, x)
 
 Computes the gradient of a Akima spline at x.
