@@ -47,6 +47,10 @@ An Akima spline is a 1D spline that avoids overshooting issues common with many 
 
 Interpolation is perhaps clearest through plotting so we'll load a plotting package for this examples.
 
+```@setup akima
+using PyPlot
+```
+
 ```@example akima
 using PyPlot
 using FLOWMath: akima, Akima, derivative, gradient
@@ -338,7 +342,8 @@ quintic_blend
 ```
 
 ### Complex-step safe functions
-The [complex-step derivative approximation](https://doi.org/10.1145/838250.838251) can be used to easily and accurately approximate first derivatives.
+
+The [complex-step derivative approximation](https://doi.org/10.1145/838250.838251) can be used to easily and accurately approximate first derivatives.  This is particularly useful to verify derivatives computed via other means like AD (in contrast to comparing against finite differencing, which suffers from inaccuracies).
 However, the function `f` one wishes to differentiate must be composed of functions that are compatible with the method.
 Most elementary functions are, but a few common ones are not:
 
