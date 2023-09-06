@@ -57,18 +57,24 @@ end
 Creates an akima spline at node points: `xdata`, `ydata`.  This is a 1D spline that avoids
 overshooting issues common with many other polynomial splines resulting in a more
 natural curve.  It also only depends on local points (`i-2`...`i+2`) allow for more efficient
-computation.  `delta_x` is the half width of a smoothing interval used for the absolute
+computation.  
+
+`delta_x` is the half width of a smoothing interval used for the absolute
 value function.  Set `delta_x=0` to recover the original akima spline.  The smoothing
 is only useful if you want to differentiate xdata and ydata.  In many case the nodal points
-are fixed so this is not needed.  Returns an akima spline object (Akima struct).
-This function, only performs construction of the spline, not evaluation.
-This is useful if you want to evaluate the same mesh at multiple different conditions.
-A convenience method exists below to perform both in one shot.
+are fixed so this is not needed. 
+
+`eps` is a cutoff used to avoid dividing by zero in the 
+weighting function. Default is `1e-30` but this could be raised to machine precision in 
+some cases to improve derivatives. (E.g., when the denominator in line 105 is very small.)
+
+Returns an akima spline object (Akima struct). This function only performs construction
+of the spline, not evaluation. This is useful if you want to evaluate the same mesh at 
+multiple different conditions. A convenience method exists below to perform both in one shot.
 """
-function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0) where {TFX, TFY}
+function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0, eps=1e-30) where {TFX, TFY}
 
     # setup
-    eps = 1e-30
     n = length(xdata)
     TCoeff = promote_type(TFX, TFY)
 
@@ -132,7 +138,7 @@ end
 (spline::Akima)(x::AbstractVector) = spline.(x)
 
 """
-    akima(x, y, xpt)
+    akima(x, y, xpt, delta=0.0, eps=1e-30)
 
 A convenience method to perform construction and evaluation of the spline in one step.
 See docstring for Akima for more details.
@@ -144,7 +150,7 @@ See docstring for Akima for more details.
 **Returns**
 - `ypt::Vector{Float} or ::Float`: interpolated value(s) at xpt using akima spline.
 """
-akima(x, y, xpt) = Akima(x, y)(xpt)
+akima(x, y, xpt, delta=0.0, eps=1e-30) = Akima(x, y, delta, eps)(xpt)
 
 """
     derivative(spline, x)
