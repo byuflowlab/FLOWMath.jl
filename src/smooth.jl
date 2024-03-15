@@ -138,6 +138,23 @@ function sigmoid_blend(f1x, f2x, x, xt, hardness=50)
 end
 
 """
+    sigmoid_blend(fx::Tuple, xt::Tuple, x, hardness=50)
+
+Smoothly transitions the results of the functions in `fx` using the sigmoid function,
+with the transition between the functions at the locations in `xt`. `hardness` controls
+the sharpness of the transition between the functions.
+"""
+function sigmoid_blend(fx::Tuple, xt::Tuple, x, hardness=50)
+    new_fx = sigmoid_blend.(fx[1:end-1], fx[2:end], x, xt, hardness)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:end-1] .+ xt[2:end]) ./ 2
+        return sigmoid_blend(new_fx, new_xt, x, hardness)
+    end
+end
+
+"""
     cubic_blend(f1x, f2x, x, xt, delta_x)
 
 Smoothly transitions the results of functions f1 and f2 using a cubic polynomial,
@@ -157,6 +174,23 @@ function cubic_blend(f1x, f2x, x, xt, delta_x)
 end
 
 """
+    cubic_blend(fx::Tuple, xt::Tuple, x, delta_x)
+
+Smoothly transitions the results of the functions in `fx` using cubic polynomials,
+with the transition between the functions at the locations in `xt`. `delta_x` is the half
+width of the smoothing interval.  The resulting function is C1 continuous
+"""
+function cubic_blend(fx::Tuple, xt, x, delta_x)
+    new_fx = cubic_blend.(fx[1:end-1], fx[2:end], x, xt, delta_x)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:end-1] .+ xt[2:end]) ./ 2
+        return cubic_blend(new_fx, new_xt, x, delta_x)
+    end
+end
+
+"""
     quintic_blend(f1x, f2x, x, xt, delta_x)
 
 Smoothly transitions the results of functions f1 and f2 using a quintic polynomial,
@@ -172,6 +206,24 @@ function quintic_blend(f1x, f2x, x, xt, delta_x)
         xp = (x-xt)/(2*delta_x) + 1/2
         sx = 6*xp^5 - 15*xp^4 + 10*xp^3
         return f1x + sx*(f2x-f1x)
+    end
+end
+
+
+"""
+    quintic_blend(fx::Tuple, xt::Tuple, x, delta_x)
+
+Smoothly transitions the results of the functions in `fx` using quintic polynomials,
+with the transition between the functions at the locations in `xt`. `delta_x` is the half
+width of the smoothing interval.  The resulting function is C2 continuous
+"""
+function quintic_blend(fx::Tuple, xt, x, delta_x)
+    new_fx = quintic_blend.(fx[1:end-1], fx[2:end], x, xt, delta_x)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:end-1] .+ xt[2:end]) ./ 2
+        return quintic_blend(new_fx, new_xt, x, delta_x)
     end
 end
 
