@@ -2,16 +2,14 @@ using Documenter, FLOWMath
 
 makedocs(;
     modules=[FLOWMath],
-    format=Documenter.HTML(),
-    pages=[
-        "Home" => "index.md",
-    ],
-    repo="https://github.com/byuflowlab/FLOWMath.jl/blob/{commit}{path}#L{line}",
+    format=Documenter.HTML(;
+        repolink="https://github.com/byuflowlab/FLOWMath.jl/blob/{commit}{path}#L{line}",
+        edit_link="master",
+    ),
+    pages=["Home" => "index.md"],
     sitename="FLOWMath.jl",
     authors="Andrew Ning <aning@byu.edu>",
-    # assets=String[],
+    checkdocs=:exports,
 )
 
-deploydocs(
-    repo="github.com/byuflowlab/FLOWMath.jl.git",
-)
+deploydocs(; repo="github.com/byuflowlab/FLOWMath.jl.git")
