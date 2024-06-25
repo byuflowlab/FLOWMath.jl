@@ -25,7 +25,7 @@ function findindex(xvec, x)
     # this version prevents extrapolation
     # if i == 0
     #     throw(DomainError(x, "x falls below range of provided spline data"))
-    # elseif i == n 
+    # elseif i == n
     #     if x == xvec[n]
     #         i = n - 1
     #     else
@@ -57,19 +57,19 @@ end
 Creates an akima spline at node points: `xdata`, `ydata`.  This is a 1D spline that avoids
 overshooting issues common with many other polynomial splines resulting in a more
 natural curve.  It also only depends on local points (`i-2`...`i+2`) allow for more efficient
-computation.  
+computation.
 
 `delta_x` is the half width of a smoothing interval used for the absolute
 value function.  Set `delta_x=0` to recover the original akima spline.  The smoothing
 is only useful if you want to differentiate xdata and ydata.  In many case the nodal points
-are fixed so this is not needed. 
+are fixed so this is not needed.
 
-`eps` is a cutoff used to avoid dividing by zero in the 
-weighting function. Default is `1e-30` but this could be raised to machine precision in 
+`eps` is a cutoff used to avoid dividing by zero in the
+weighting function. Default is `1e-30` but this could be raised to machine precision in
 some cases to improve derivatives. (E.g., when the denominator in line 105 is very small.)
 
 Returns an akima spline object (Akima struct). This function only performs construction
-of the spline, not evaluation. This is useful if you want to evaluate the same mesh at 
+of the spline, not evaluation. This is useful if you want to evaluate the same mesh at
 multiple different conditions. A convenience method exists below to perform both in one shot.
 """
 function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0, eps=1e-30) where {TFX, TFY}
@@ -241,7 +241,7 @@ end
 
 """
     linear(xdata, ydata, x::AbstractVector)
-    
+
 Convenience function to perform linear interpolation at multiple points.
 """
 linear(xdata, ydata, x::AbstractVector) = linear.(Ref(xdata), Ref(ydata), x)
