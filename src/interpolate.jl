@@ -5,13 +5,11 @@ Interpolation Methods
 
 using OffsetArrays: OffsetVector
 
-
 """
 private function, find index in array where x would be inserted for interpolation
 between xvec[i] and xvec[i+1]
 """
 function findindex(xvec, x)
-
     n = length(xvec)
     i = searchsortedlast(real(xvec), real(x))
 
@@ -39,17 +37,14 @@ end
 ## ------ Akima Interpolation  ---------
 
 # struct used internally
-struct Akima{TX, TY, TCoeff}
-
+struct Akima{TX,TY,TCoeff}
     xdata::TX
     ydata::TY
     p0::Vector{TCoeff}
     p1::Vector{TCoeff}
     p2::Vector{TCoeff}
     p3::Vector{TCoeff}
-
 end
-
 
 """
     Akima(xdata, ydata, delta_x=0.0)
@@ -72,65 +67,66 @@ Returns an akima spline object (Akima struct). This function only performs const
 of the spline, not evaluation. This is useful if you want to evaluate the same mesh at
 multiple different conditions. A convenience method exists below to perform both in one shot.
 """
-function Akima(xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0, eps=1e-30) where {TFX, TFY}
+function Akima(
+    xdata::AbstractVector{TFX}, ydata::AbstractVector{TFY}, delta_x=0.0, eps=1e-30
+) where {TFX,TFY}
 
     # setup
     n = length(xdata)
     TCoeff = promote_type(TFX, TFY)
 
     # compute segment slopes
-    m = OffsetVector(zeros(TCoeff, n+3), -1:n+1)
-    for i = 1:n-1
-        m[i] = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
+    m = OffsetVector(zeros(TCoeff, n + 3), -1:(n + 1))
+    for i in 1:(n - 1)
+        m[i] = (ydata[i + 1] - ydata[i]) / (xdata[i + 1] - xdata[i])
     end
 
     # estimation for end points
-    m[0] = 2.0*m[1] - m[2]
-    m[-1] = 2.0*m[0] - m[1]
-    m[n] = 2.0*m[n-1] - m[n-2]
-    m[n+1] = 2.0*m[n] - m[n-1]
+    m[0] = 2.0 * m[1] - m[2]
+    m[-1] = 2.0 * m[0] - m[1]
+    m[n] = 2.0 * m[n - 1] - m[n - 2]
+    m[n + 1] = 2.0 * m[n] - m[n - 1]
 
     # slope at points
     t = zeros(TCoeff, n)
-    for i = 1:n
-        m1 = m[i-2]
-        m2 = m[i-1]
+    for i in 1:n
+        m1 = m[i - 2]
+        m2 = m[i - 1]
         m3 = m[i]
-        m4 = m[i+1]
+        m4 = m[i + 1]
         w1 = abs_smooth(m4 - m3, delta_x)
         w2 = abs_smooth(m2 - m1, delta_x)
         if (real(w1) < eps && real(w2) < eps)
-            t[i] = 0.5*(m2 + m3)  # special case to avoid divide by zero
+            t[i] = 0.5 * (m2 + m3)  # special case to avoid divide by zero
         else
-            t[i] = (w1*m2 + w2*m3) / (w1 + w2)
+            t[i] = (w1 * m2 + w2 * m3) / (w1 + w2)
         end
     end
 
     # polynomial cofficients
-    p0 = zeros(TCoeff, n-1)
-    p1 = zeros(TCoeff, n-1)
-    p2 = zeros(TCoeff, n-1)
-    p3 = zeros(TCoeff, n-1)
-    for i = 1:n-1
-        dx = xdata[i+1] - xdata[i]
+    p0 = zeros(TCoeff, n - 1)
+    p1 = zeros(TCoeff, n - 1)
+    p2 = zeros(TCoeff, n - 1)
+    p3 = zeros(TCoeff, n - 1)
+    for i in 1:(n - 1)
+        dx = xdata[i + 1] - xdata[i]
         t1 = t[i]
-        t2 = t[i+1]
+        t2 = t[i + 1]
         p0[i] = ydata[i]
         p1[i] = t1
-        p2[i] = (3.0*m[i] - 2.0*t1 - t2)/dx
-        p3[i] = (t1 + t2 - 2.0*m[i])/dx^2
+        p2[i] = (3.0 * m[i] - 2.0 * t1 - t2) / dx
+        p3[i] = (t1 + t2 - 2.0 * m[i]) / dx^2
     end
 
     return Akima(xdata, ydata, p0, p1, p2, p3)
 end
 
 function (spline::Akima)(x::Number)
-
     j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
-    y = spline.p0[j] + spline.p1[j]*dx + spline.p2[j]*dx^2 + spline.p3[j]*dx^3
+    y = spline.p0[j] + spline.p1[j] * dx + spline.p2[j] * dx^2 + spline.p3[j] * dx^3
 
     return y
 end
@@ -148,8 +144,8 @@ See docstring for Akima for more details.
 - `xpt::Vector{Float} or ::Float`: the evaluation point(s)
 - `delta_x::Float=0.0` : the half width of a smoothing interval used for the absolute
 value function.
-- `eps::Float=1e-30` : a cutoff used to avoid dividing by zero in the 
-weighting function. Default is `1e-30` but this could be raised to machine precision in 
+- `eps::Float=1e-30` : a cutoff used to avoid dividing by zero in the
+weighting function. Default is `1e-30` but this could be raised to machine precision in
 some cases to improve derivatives.
 
 **Returns**
@@ -170,12 +166,11 @@ Computes the derivative of an Akima spline at x.
 - `dydx::Float`: derivative at x using akima spline.
 """
 function derivative(spline::Akima, x)
-
     j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
-    dydx = spline.p1[j] + 2*spline.p2[j]*dx + 3*spline.p3[j]*dx^2
+    dydx = spline.p1[j] + 2 * spline.p2[j] * dx + 3 * spline.p3[j] * dx^2
 
     return dydx
 end
@@ -193,12 +188,11 @@ Computes the second derivative of an Akima spline at x.
 - `d2ydx2::Float`: second derivative at x using akima spline.
 """
 function second_derivative(spline::Akima, x)
-
     j = findindex(spline.xdata, x)
 
     # evaluate polynomial
     dx = x - spline.xdata[j]
-    d2ydx2 = 2.0*spline.p2[j] + 6.0*spline.p3[j]*dx
+    d2ydx2 = 2.0 * spline.p2[j] + 6.0 * spline.p3[j] * dx
 
     return d2ydx2
 end
@@ -217,7 +211,6 @@ Computes the gradient of a Akima spline at x.
 """
 gradient(spline::Akima, x) = derivative.(Ref(spline), x)
 
-
 # ------ Linear Interpolation  ---------
 
 """
@@ -234,12 +227,11 @@ Linear interpolation.
 - `y::Float64`: value at x using linear interpolation
 """
 function linear(xdata, ydata, x::Number)
-
     i = findindex(xdata, x)
 
     # lienar interpolation
-    eta = (x - xdata[i]) / (xdata[i+1] - xdata[i])
-    y = ydata[i] + eta*(ydata[i+1] - ydata[i])
+    eta = (x - xdata[i]) / (xdata[i + 1] - xdata[i])
+    y = ydata[i] + eta * (ydata[i + 1] - ydata[i])
 
     return y
 end
@@ -251,14 +243,12 @@ Convenience function to perform linear interpolation at multiple points.
 """
 linear(xdata, ydata, x::AbstractVector) = linear.(Ref(xdata), Ref(ydata), x)
 
-
 """
 derivative of linear interpolation at `x::Number`
 """
 function derivative(xdata, ydata, x)
-
     i = findindex(xdata, x)
-    dydx = (ydata[i+1] - ydata[i]) / (xdata[i+1] - xdata[i])
+    dydx = (ydata[i + 1] - ydata[i]) / (xdata[i + 1] - xdata[i])
 
     return dydx
 end
@@ -267,7 +257,6 @@ end
 gradient of linear interpolation at `x::Vector`
 """
 gradient(xdata, ydata, x) = derivative.(Ref(xdata), Ref(ydata), x)
-
 
 # ------- higher order recursive 1D interpolation ------
 
@@ -289,7 +278,6 @@ but it is generalizable to any spline approach and any dimension.
 - `fhat::Matrix{Float}`: where fhat[i, j] is the estimate function value at xpt[i], ypt[j]
 """
 function interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
-
     ny = length(ydata)
     nxpt = length(xpt)
     nypt = length(ypt)
@@ -299,13 +287,12 @@ function interp2d(interp1d, xdata, ydata, fdata, xpt, ypt)
     yinterp = Array{R}(undef, ny, nxpt)
     output = Array{R}(undef, nxpt, nypt)
 
-    for i = 1:ny
+    for i in 1:ny
         yinterp[i, :] .= interp1d(xdata, fdata[:, i], xpt)
     end
-    for i = 1:nxpt
+    for i in 1:nxpt
         output[i, :] .= interp1d(ydata, yinterp[:, i], ypt)
     end
-
 
     return output
 end
@@ -316,7 +303,6 @@ end
 Same as interp2d, except in three dimension.
 """
 function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
-
     nz = length(zdata)
     nxpt = length(xpt)
     nypt = length(ypt)
@@ -326,11 +312,11 @@ function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
     zinterp = Array{R}(undef, nz, nxpt, nypt)
     output = Array{R}(undef, nxpt, nypt, nzpt)
 
-    for i = 1:nz
+    for i in 1:nz
         zinterp[i, :, :] .= interp2d(interp1d, xdata, ydata, fdata[:, :, i], xpt, ypt)
     end
-    for j = 1:nypt
-        for i = 1:nxpt
+    for j in 1:nypt
+        for i in 1:nxpt
             output[i, j, :] .= interp1d(zdata, zinterp[:, i, j], zpt)
         end
     end
@@ -338,14 +324,12 @@ function interp3d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
     return output
 end
 
-
 """
     interp4d(interp1d, xdata, ydata, zdata, fdata, xpt, ypt, zpt)
 
 Same as interp3d, except in four dimensions.
 """
 function interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, xpt, ypt, zpt, tpt)
-
     nt = length(tdata)
     nxpt = length(xpt)
     nypt = length(ypt)
@@ -356,12 +340,14 @@ function interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, xpt, ypt, zpt, tp
     tinterp = Array{R}(undef, nt, nxpt, nypt, nzpt)
     output = Array{R}(undef, nxpt, nypt, nzpt, ntpt)
 
-    for i = 1:nt
-        tinterp[i, :, :, :] .= interp3d(interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt)
+    for i in 1:nt
+        tinterp[i, :, :, :] .= interp3d(
+            interp1d, xdata, ydata, zdata, fdata[:, :, :, i], xpt, ypt, zpt
+        )
     end
-    for k = 1:nzpt
-        for j = 1:nypt
-            for i = 1:nxpt
+    for k in 1:nzpt
+        for j in 1:nypt
+            for i in 1:nxpt
                 output[i, j, k, :] .= interp1d(tdata, tinterp[:, i, j, k], tpt)
             end
         end

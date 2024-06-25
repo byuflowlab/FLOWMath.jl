@@ -9,7 +9,7 @@ Examples of the available methods are shown below.  More examples are available 
 This is just simple trapezoidal integration using vectors.  [Gaussian quadrature](https://github.com/JuliaMath/QuadGK.jl) is much better, but for times when we need to define a mesh for other purposes and cannot use an adaptive method a simple trapezoidal integration fits the bill.
 
 ```@example trapz
-using FLOWMath: trapz
+using ..FLOWMath: trapz
 
 x = range(0.0, stop=pi+1e-15, step=pi/100)
 y = sin.(x)
@@ -27,7 +27,7 @@ trapz
 Brent's method is an effective 1D root finding method as it combines bracketing methods (bisection) with fast quadratic interpolation.  Thus, you can get near quadratic convergence but with safeguarding.
 
 ```@example
-using FLOWMath: brent
+using ..FLOWMath: brent
 
 f(x) = x^2 - 1.0
 xstar, outputs = brent(f, -2.0, 0)
@@ -52,7 +52,7 @@ using PyPlot
 ```
 
 ```@example akima
-using FLOWMath: akima, Akima, derivative, gradient
+using ..FLOWMath: akima, Akima, derivative, second_derivative, gradient
 
 x = 0:pi/4:2*pi
 y = sin.(x)
@@ -106,7 +106,7 @@ second_derivative
 Linear interpolation is straightforward.
 
 ```@example linear
-using FLOWMath: linear, derivative, gradient
+using ..FLOWMath: linear, derivative, gradient
 
 xvec = [1.0, 2.0, 4.0, 5.0]
 yvec = [2.0, 3.0, 5.0, 8.0]
@@ -140,7 +140,7 @@ The functions `interp2d`, `interp3d`, and `interp4d` are generic and will accept
 
 2D:
 ```@example akima
-using FLOWMath: interp2d
+using ..FLOWMath: interp2d
 
 x = -5.0:5.0
 y = -5.0:5.0
@@ -166,7 +166,7 @@ savefig("contour.svg"); nothing # hide
 
 4D:
 ```@example akima
-using FLOWMath: interp4d
+using ..FLOWMath: interp4d
 
 x = -1:0.2:1
 y = -1:0.2:1
@@ -212,12 +212,12 @@ interp4d
 
 The absolute value function is not differentiable at x = 0.  The below function smoothly adds a small quadratic function in place of the cusp with a half-width given by `delta_x`.  This small rounding at the bottom can prevent numerical issues with gradient-based optimization.
 
-```@setup abbs
+```@setup abss
 using PyPlot
 ```
 
 ```@example abss
-using FLOWMath: abs_smooth
+using ..FLOWMath: abs_smooth
 
 x = range(-2.0, 2.0, length=100)
 delta_x = 0.1
@@ -243,7 +243,7 @@ The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradi
 We provide two implementations of this function: `ksmax` and `ksmin`.  `ksmax` and `ksmin` may be used to smoothly approximate the maximum and minimum functions, respectively.  Both functions take the optional parameter `hardness` that controls the smoothness of the resulting function.  As `hardness` increases the function more and more closely approximates the maximum (or minimum) function.
 
 ```@example ks
-using FLOWMath: ksmax, ksmin
+using ..FLOWMath: ksmax, ksmin
 
 x = [1.2, 0.0, 0.5]
 hardness = 100
@@ -257,18 +257,20 @@ min_x = ksmin(x, hardness)
 ```@docs
 ksmax
 ksmin
+ksmax_adaptive
+ksmin_adaptive
 ```
 
 ### Blending functions using the sigmoid function
 
 The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location (`xt`) and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
 
-```setup sb
+```@setup sb
 using PyPlot
 ```
 
 ```@example sb
-using FLOWMath: sigmoid_blend
+using ..FLOWMath: sigmoid_blend
 
 x = 0.1
 f1x = x
@@ -300,6 +302,7 @@ savefig("sigmoid.svg"); nothing # hide
 
 ```@docs
 sigmoid_blend
+sigmoid
 ```
 
 ### Blending functions using cubic or quintic polynomials
@@ -311,7 +314,7 @@ using PyPlot
 ```
 
 ```@example poly
-using FLOWMath: cubic_blend, quintic_blend
+using ..FLOWMath: cubic_blend, quintic_blend
 
 x = 0.05
 f1x = x
