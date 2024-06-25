@@ -116,7 +116,7 @@ end
 Sigmoid function, implemented with branching to avoid NaNs
 """
 function sigmoid(x)
-    if x >= zero(x)
+    if real(x) >= zero(real(x))
         z = exp(-x)
         return one(z) / (one(z) + z)
     else
