@@ -52,7 +52,6 @@ using PyPlot
 ```
 
 ```@example akima
-using PyPlot
 using FLOWMath: akima, Akima, derivative, gradient
 
 x = 0:pi/4:2*pi
@@ -104,7 +103,7 @@ second_derivative
 
 ### Linear Spline
 
-Linear interpolation is straightforward.  
+Linear interpolation is straightforward.
 
 ```@example linear
 using FLOWMath: linear, derivative, gradient
@@ -213,7 +212,11 @@ interp4d
 
 The absolute value function is not differentiable at x = 0.  The below function smoothly adds a small quadratic function in place of the cusp with a half-width given by `delta_x`.  This small rounding at the bottom can prevent numerical issues with gradient-based optimization.
 
-```@example
+```@setup abbs
+using PyPlot
+```
+
+```@example abss
 using FLOWMath: abs_smooth
 
 x = range(-2.0, 2.0, length=100)
@@ -221,7 +224,6 @@ delta_x = 0.1
 
 y = abs_smooth.(x, delta_x)
 
-using PyPlot
 figure()
 plot(x, y)
 savefig("abs.svg"); nothing # hide
@@ -236,7 +238,7 @@ abs_smooth
 
 ### Kreisselmeier-Steinhauser Constraint Aggregation Function
 
-The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradient-based optimization problems to smoothly aggregate an arbitrary number of constraints into a single constraint.  It may also be used as a smooth approximation of the maximum function (or minimum function).  A salient feature of this function is that it is guaranteed to overestimate the maximum function (or underestimate the minimum function).  This feature of the function can be used to ensure that the resulting constraint is conservative.  
+The Kreisselmeier-Steinhauser (KS) function is often used with constrained gradient-based optimization problems to smoothly aggregate an arbitrary number of constraints into a single constraint.  It may also be used as a smooth approximation of the maximum function (or minimum function).  A salient feature of this function is that it is guaranteed to overestimate the maximum function (or underestimate the minimum function).  This feature of the function can be used to ensure that the resulting constraint is conservative.
 
 We provide two implementations of this function: `ksmax` and `ksmin`.  `ksmax` and `ksmin` may be used to smoothly approximate the maximum and minimum functions, respectively.  Both functions take the optional parameter `hardness` that controls the smoothness of the resulting function.  As `hardness` increases the function more and more closely approximates the maximum (or minimum) function.
 
@@ -261,6 +263,10 @@ ksmin
 
 The sigmoid function may be used to smoothly blend the results of two continuous one-dimensional functions.  The method implemented in this package uses a user-specified transition location (`xt`) and scales the input of the sigmoid function using the input `hardness` in order to adjust the smoothness of the transition between the two functions.
 
+```setup sb
+using PyPlot
+```
+
 ```@example sb
 using FLOWMath: sigmoid_blend
 
@@ -282,7 +288,6 @@ xt = 0.0
 hardness = 25
 y = sigmoid_blend.(f1x, f2x, x, xt, hardness)
 
-using PyPlot
 figure()
 plot(x, f1x)
 plot(x, f2x)
@@ -300,6 +305,10 @@ sigmoid_blend
 ### Blending functions using cubic or quintic polynomials
 
 Cubic or quintic polynomials can also be used to construct a piecewise function that smoothly blends two functions.  The advantage of this approach compared to `sigmoid_blend` is that the blending can be restricted to a small interval defined by the half-width `delta_x`.  The disadvantage of this approach is that the resulting function is only C1 continuous when `cubic_blend` is used, and C2 continuous when `quintic_blend` is used.  The method implemented in this package uses a user-specified transition location (`xt`).  The smoothness of the transition between the two functions can be adjusted by modifying `delta_x`, which is the half-width of the transition interval.
+
+```@setup poly
+using PyPlot
+```
 
 ```@example poly
 using FLOWMath: cubic_blend, quintic_blend
@@ -324,7 +333,6 @@ delta_x = 0.1
 y1 = cubic_blend.(f1x, f2x, x, xt, delta_x)
 y2 = quintic_blend.(f1x, f2x, x, xt, delta_x)
 
-using PyPlot
 figure()
 plot(x, f1x)
 plot(x, f2x)
