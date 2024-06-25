@@ -1,10 +1,12 @@
-using Documenter#, FLOWMath
+using Documenter, FLOWMath
 
 makedocs(;
     modules=[FLOWMath],
-    format=Documenter.HTML(),
+    format=Documenter.HTML(;
+        repolink="https://github.com/byuflowlab/FLOWMath.jl/blob/{commit}{path}#L{line}",
+        edit_link="master",
+    ),
     pages=["Home" => "index.md"],
-    repo="https://github.com/byuflowlab/FLOWMath.jl/blob/{commit}{path}#L{line}",
     sitename="FLOWMath.jl",
     authors="Andrew Ning <aning@byu.edu>",
     checkdocs=:exports,
