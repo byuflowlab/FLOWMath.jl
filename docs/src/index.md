@@ -20,6 +20,31 @@ z = trapz(x, y)
 trapz
 ```
 
+There is also `cumtrapz` which returns the cumulative integral of `y` with respect to `x`
+
+```@example cumtrapz
+using FLOWMath: cumtrapz
+x = range(0.0, stop=pi+1e-15, step=pi/100)
+y = sin.(x)
+z = cumtrapz(x, y)
+extrema(z .- ((-cos.(x)) .- (-cos(x[1]))))  # compare to the exact answer -cos(x) - -cos(0)
+```
+
+and a version `cumtrapz!` that writes the result to the first argument
+
+```@example cumtrapz!
+using FLOWMath: cumtrapz!
+x = range(0.0, stop=pi+1e-15, step=pi/100)
+y = sin.(x)
+z = similar(y)
+cumtrapz!(z, x, y)
+extrema(z .- ((-cos.(x)) .- (-cos(x[1]))))  # compare to the exact answer -cos(x) - -cos(0)
+```
+
+```@docs
+cumtrapz
+cumtrapz!
+```
 ## Root Finding
 
 ### Brent's Method (1D functions)
