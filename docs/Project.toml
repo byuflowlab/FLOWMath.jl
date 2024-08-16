@@ -2,6 +2,3 @@
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FLOWMath = "6cb5d3fb-0fe8-4cc2-bd89-9fe0b19a99d3"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
-
-[compat]
-Documenter = "0.24"

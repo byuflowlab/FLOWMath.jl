@@ -1,6 +1,5 @@
 # ------ Smoothing functions often used to permit continuous differentiability -----
 
-
 """
     abs_smooth(x, delta_x)
 
@@ -9,13 +8,11 @@ delta_x is the half width of the smoothing interval.
 Typically usage is with gradient-based optimization.
 """
 function abs_smooth(x, delta_x)
-
     if real(x) < delta_x && real(x) > -delta_x
-        return x^2/(2*delta_x) + delta_x/2
+        return x^2 / (2 * delta_x) + delta_x / 2
     else
         return abs_cs_safe(x)
     end
-
 end
 
 """
@@ -27,7 +24,7 @@ overestimate the maximum function, i.e. `maximum(x) <= ksmax(x, hardness)`.
 """
 function ksmax(x, hardness=50)
     k = maximum(x)
-    return 1.0/hardness*log(sum(exp.(hardness*(x.-k)))) .+ k
+    return 1.0 / hardness * log(sum(exp.(hardness * (x .- k)))) .+ k
 end
 
 """
@@ -53,11 +50,13 @@ function ksmax_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
     # check if derivative of the KS function wrt hardness is within the tolerance
     deriv = ksmax_h(x, hardness)
     target_deriv = -tol
-    if abs(deriv) > tol * (1-smoothing_fraction)
+    if abs(deriv) > tol * (1 - smoothing_fraction)
         # increase hardness by applying Newton's method once in log-log space
-        dderiv = ksmax_hh(x, hardness)*hardness/deriv
-        new_hardness = 10^(log10(hardness) + log10(target_deriv/deriv)/dderiv)
-        hardness = quintic_blend(hardness, new_hardness, -deriv, -target_deriv, smoothing_fraction*tol)
+        dderiv = ksmax_hh(x, hardness) * hardness / deriv
+        new_hardness = 10^(log10(hardness) + log10(target_deriv / deriv) / dderiv)
+        hardness = quintic_blend(
+            hardness, new_hardness, -deriv, -target_deriv, smoothing_fraction * tol
+        )
     end
     # use the new hardness to compute ksmax
     return ksmax(x, hardness)
@@ -73,8 +72,9 @@ Newton's method rather than the secant method for increasing hardness values.
 Some blending is also used to ensure that result is C1 continuous.
 `smoothing_fraction` controls the smoothness of this blending.
 """
-ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1) =
-    -ksmax_adaptive(-x, hardness, tol=tol, smoothing_fraction=smoothing_fraction)
+function ksmin_adaptive(x, hardness=50; tol=1e-6, smoothing_fraction=0.1)
+    return -ksmax_adaptive(-x, hardness; tol=tol, smoothing_fraction=smoothing_fraction)
+end
 
 """
     ksmax_h(x, hardness)
@@ -84,11 +84,11 @@ function with respect to `hardness`.
 """
 function ksmax_h(x, hardness)
     k = maximum(x)
-    tmp1 = exp.(hardness*(x.-k))
-    tmp2 = sum((x.-k).*tmp1)
+    tmp1 = exp.(hardness * (x .- k))
+    tmp2 = sum((x .- k) .* tmp1)
     tmp3 = sum(tmp1)
-    tmp4 = 1.0/hardness*log(tmp3)
-    return 1.0/hardness*(tmp2/tmp3 - tmp4)
+    tmp4 = 1.0 / hardness * log(tmp3)
+    return 1.0 / hardness * (tmp2 / tmp3 - tmp4)
 end
 
 """
@@ -99,15 +99,15 @@ function with respect to `hardness`.
 """
 function ksmax_hh(x, hardness)
     k = maximum(x)
-    tmp1 = exp.(hardness*(x.-k))
-    tmp2 = sum((x.-k).*tmp1)
-    tmp2_h = sum((x.-k).^2 .* tmp1)
+    tmp1 = exp.(hardness * (x .- k))
+    tmp2 = sum((x .- k) .* tmp1)
+    tmp2_h = sum((x .- k) .^ 2 .* tmp1)
     tmp3 = sum(tmp1)
-    tmp3_h = sum((x.-k).*tmp1)
-    tmp4 = 1.0/hardness*log(tmp3)
-    tmp4_h = 1.0/hardness*(tmp2/tmp3 - tmp4)
-    return -1.0/hardness^2*(tmp2/tmp3 - tmp4) +
-        1.0/hardness*(tmp2_h/tmp3 - tmp2*tmp3_h/tmp3^2 - tmp4_h)
+    tmp3_h = sum((x .- k) .* tmp1)
+    tmp4 = 1.0 / hardness * log(tmp3)
+    tmp4_h = 1.0 / hardness * (tmp2 / tmp3 - tmp4)
+    return -1.0 / hardness^2 * (tmp2 / tmp3 - tmp4) +
+           1.0 / hardness * (tmp2_h / tmp3 - tmp2 * tmp3_h / tmp3^2 - tmp4_h)
 end
 
 """
@@ -116,7 +116,7 @@ end
 Sigmoid function, implemented with branching to avoid NaNs
 """
 function sigmoid(x)
-    if x >= zero(x)
+    if real(x) >= zero(real(x))
         z = exp(-x)
         return one(z) / (one(z) + z)
     else
@@ -133,8 +133,25 @@ with the transition between the functions located at `xt`. `hardness` controls t
 sharpness of the transition between the two functions.
 """
 function sigmoid_blend(f1x, f2x, x, xt, hardness=50)
-    sx = sigmoid(hardness*(x-xt))
-    return f1x + sx*(f2x-f1x)
+    sx = sigmoid(hardness * (x - xt))
+    return f1x + sx * (f2x - f1x)
+end
+
+"""
+    sigmoid_blend(fx::Tuple, xt::Tuple, x, hardness=50)
+
+Smoothly transitions the results of the functions in `fx` using the sigmoid function,
+with the transition between the functions at the locations in `xt`. `hardness` controls
+the sharpness of the transition between the functions.
+"""
+function sigmoid_blend(fx::Tuple, xt::Tuple, x, hardness=50)
+    new_fx = sigmoid_blend.(fx[1:(end - 1)], fx[2:end], x, xt, hardness)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:(end - 1)] .+ xt[2:end]) ./ 2
+        return sigmoid_blend(new_fx, new_xt, x, hardness)
+    end
 end
 
 """
@@ -150,9 +167,26 @@ function cubic_blend(f1x, f2x, x, xt, delta_x)
     elseif x >= xt + delta_x
         return f2x
     else
-        xp = (x-xt)/(2*delta_x) + 1/2
-        sx = -2*xp^3 + 3*xp^2
-        return f1x + sx*(f2x-f1x)
+        xp = (x - xt) / (2 * delta_x) + 1 / 2
+        sx = -2 * xp^3 + 3 * xp^2
+        return f1x + sx * (f2x - f1x)
+    end
+end
+
+"""
+    cubic_blend(fx::Tuple, xt::Tuple, x, delta_x)
+
+Smoothly transitions the results of the functions in `fx` using cubic polynomials,
+with the transition between the functions at the locations in `xt`. `delta_x` is the half
+width of the smoothing interval.  The resulting function is C1 continuous
+"""
+function cubic_blend(fx::Tuple, xt, x, delta_x)
+    new_fx = cubic_blend.(fx[1:(end - 1)], fx[2:end], x, xt, delta_x)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:(end - 1)] .+ xt[2:end]) ./ 2
+        return cubic_blend(new_fx, new_xt, x, delta_x)
     end
 end
 
@@ -169,9 +203,26 @@ function quintic_blend(f1x, f2x, x, xt, delta_x)
     elseif x >= xt + delta_x
         return f2x
     else
-        xp = (x-xt)/(2*delta_x) + 1/2
-        sx = 6*xp^5 - 15*xp^4 + 10*xp^3
-        return f1x + sx*(f2x-f1x)
+        xp = (x - xt) / (2 * delta_x) + 1 / 2
+        sx = 6 * xp^5 - 15 * xp^4 + 10 * xp^3
+        return f1x + sx * (f2x - f1x)
+    end
+end
+
+"""
+    quintic_blend(fx::Tuple, xt::Tuple, x, delta_x)
+
+Smoothly transitions the results of the functions in `fx` using quintic polynomials,
+with the transition between the functions at the locations in `xt`. `delta_x` is the half
+width of the smoothing interval.  The resulting function is C2 continuous
+"""
+function quintic_blend(fx::Tuple, xt, x, delta_x)
+    new_fx = quintic_blend.(fx[1:(end - 1)], fx[2:end], x, xt, delta_x)
+    if length(new_fx) == 1
+        return only(new_fx)
+    else
+        new_xt = (xt[1:(end - 1)] .+ xt[2:end]) ./ 2
+        return quintic_blend(new_fx, new_xt, x, delta_x)
     end
 end
 

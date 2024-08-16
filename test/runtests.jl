@@ -159,6 +159,21 @@ atol = 1e-15
 xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
 
+# Test that we can diff through FLOWMath.brent.
+function g(x)
+    # xL and xR need to bracket the root of the function, so may need to adjust if `x0` below is changed.
+    xL, xR = 0.0, 10.0
+    ystar, info = brent(y->cos(y)-x*y, xL, xR)
+    info.flag == "CONVERGED" || error("brent solver failed to converge: info = $info")
+    return sin(ystar) + cos(ystar)^2
+end
+x0 = 3.0
+dfdx_fd = ForwardDiff.derivative(g, x0)
+dfdx_finitediff = FiniteDiff.finite_difference_derivative(g, x0, Val{:forward})
+dfdx_cs = FiniteDiff.finite_difference_derivative(g, x0, Val{:complex})
+@test abs(dfdx_finitediff - dfdx_fd) < 1e-8
+@test abs(dfdx_cs - dfdx_fd) < 1e-12
+
 # -------------------------
 
 # ------ abs_smooth ---------
@@ -619,6 +634,10 @@ spl = Akima(x, y)
 dydx = derivative(spl, pi/16)
 
 @test isapprox(dydx, 1.0180260961104746, atol=1e-12)
+
+d2ydx2 = second_derivative(spl, pi/16)
+
+@test isapprox(d2ydx2, -0.7003004339939436, atol=1e-12)
 
 dydx = gradient(spl, xpt)
 
