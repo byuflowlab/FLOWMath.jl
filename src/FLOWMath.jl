@@ -7,7 +7,7 @@ export dot_cs_safe
 export atan_cs_safe
 
 include("quadrature.jl")
-export trapz
+export trapz, cumtrapz, cumtrapz!
 
 include("roots.jl")
 export brent

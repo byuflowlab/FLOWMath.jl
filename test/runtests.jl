@@ -101,7 +101,41 @@ y = sin.(x)
 z = trapz(x, y)
 @test isapprox(z, 1.999835503887444, atol=1e-15)
 
-# -------------------------
+# ------ cumtrapz --------
+# tests from the matlab cumtrapz docs
+# https://www.mathworks.com/help/matlab/ref/cumtrapz.html
+y = Float64[1, 4, 9, 16, 25]
+x = 1:length(y)
+@test all(cumtrapz(x, y) .≈ [0.0, 2.5, 9.0, 21.5, 42.0])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+x = range(0, pi; length=6)
+y = sin.(x)
+@test all(isapprox.(cumtrapz(x, y), [0, 0.1847, 0.6681, 1.2657, 1.7491, 1.9338]; atol=1e-4))
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+x = [1, 2.5, 7, 10]
+y = [5.2, 7.7,  9.6, 13.2]
+@test all(cumtrapz(x, y) .≈ [0, 9.6750, 48.6000, 82.8000])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+y = [4.8, 7.0, 10.5, 14.5]
+@test all(cumtrapz(x, y) .≈ [0, 8.8500, 48.2250, 85.7250])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+y = [4.9, 6.5, 10.2, 13.8]
+@test all(cumtrapz(x, y) .≈ [0, 8.5500, 46.1250, 82.1250])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
 
 # ------ Brent's method ------
 
