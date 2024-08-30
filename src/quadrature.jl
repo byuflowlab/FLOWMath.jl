@@ -19,7 +19,7 @@ end
 
 Cumulatively integrate `y` w.r.t `x` using the trapezoidal method, returning an array the same size as `x` and `y`.
 """
-cumtrapz(x, y) = cumtrapz!(similar(y), x, y)
+cumtrapz(x, y) = cumtrapz!(similar(y, promote_type(eltype(x), eltype(y))), x, y)
 
 
 """
