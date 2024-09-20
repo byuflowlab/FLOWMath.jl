@@ -260,6 +260,19 @@ hardness = 100.0
 x_max_smooth = ksmin(x, hardness)
 @test isapprox(x_max_smooth, -0.006931471805599453)
 
+# Test we can diff through ksmax and ksmin:
+ksmax_wrapper(x) = sin(ksmax(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmax_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmax_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
+
+ksmin_wrapper(x) = sin(ksmin(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmin_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmin_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
+
 # -------------------------
 
 # ------ ksmax_adaptive ---------
@@ -347,6 +360,19 @@ x = [0.165, 0.0]
 smoothing_fraction = 0.2
 x_max_smooth = ksmin_adaptive(x, smoothing_fraction=smoothing_fraction)
 @test isapprox(x_max_smooth, -5.2856933329025475e-6)
+
+# Test we can diff through ksmax_adaptive and ksmin_adaptive:
+ksmax_adaptive_wrapper(x) = sin(ksmax_adaptive(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmax_adaptive_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmax_adaptive_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
+
+ksmin_adaptive_wrapper(x) = sin(ksmin_adaptive(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmin_adaptive_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmin_adaptive_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
 
 # -------------------------
 
