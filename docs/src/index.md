@@ -377,6 +377,36 @@ cubic_blend
 quintic_blend
 ```
 
+### Step function
+Step functions are not easily differentiable. The below function smoothly transitions from `y0` to `yf` when `x` equals `x_step`. The transition occurs between `x_step`-`dx` and `x_step`+`dx`. The polynomial used in the transtion of order 2`N`+1.
+
+```@setup stepsmooth
+using PyPlot
+```
+
+```@example stepsmooth
+using ..FLOWMath: step_smooth
+
+x = range(0.0, 1.0, length=100)
+dx = 0.1
+x_step = 0.5
+y0 = 2.0
+yf = 5.0
+
+y = step_smooth.(x, x_step, dx, y0, yf; N=1)
+
+figure()
+plot(x, y)
+savefig("step.svg"); nothing # hide
+```
+
+![](step.svg)
+
+
+```@docs
+smooth_step
+```
+
 ### Complex-step safe functions
 
 The [complex-step derivative approximation](https://doi.org/10.1145/838250.838251) can be used to easily and accurately approximate first derivatives.  This is particularly useful to verify derivatives computed via other means like AD (in contrast to comparing against finite differencing, which suffers from inaccuracies).
