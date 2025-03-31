@@ -857,5 +857,6 @@ for i in eachindex(x)
     @test smooth_step(x[i], 1.0, 1.0) == y[i]
     @test ForwardDiff.derivative(x0 -> smooth_step(x0, 1.0, 1.0), x[i]) == dy[i]
 end
+# ---------------------------
 
 end
