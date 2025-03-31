@@ -404,7 +404,7 @@ savefig("step.svg"); nothing # hide
 
 
 ```@docs
-smooth_step
+step_smooth
 ```
 
 ### Complex-step safe functions
