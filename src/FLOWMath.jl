@@ -20,6 +20,7 @@ export sigmoid
 export sigmoid_blend
 export cubic_blend
 export quintic_blend
+export smooth_step
 
 include("interpolate.jl")
 export Akima
