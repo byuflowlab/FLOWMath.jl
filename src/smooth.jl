@@ -233,7 +233,7 @@ Smoothly transition between `a` and `b` when `x` equals `x_step`. The transition
 at `x_step`-`dx` and ends at `x_step`+`dx`. The polynomial used in the transition is of 
 order 2`N`+1. (https://en.wikipedia.org/wiki/Smoothstep)
 """
-function step_smooth(x, x_step, dx, a=zero(x), b=one(x); N=1)
+function step_smooth(x, x_step, dx, a=zero(x), b=one(x); N=2)
     @assert dx > 0
     edge_left = x_step - dx
     x <= edge_left && return a
@@ -243,9 +243,13 @@ function step_smooth(x, x_step, dx, a=zero(x), b=one(x); N=1)
     return _step_smooth(x; N=N) * (b - a) + a
 end
 
-function _step_smooth(x; N=1)
-    if N == 1
+function _step_smooth(x; N=2)
+    if N == 0
+        return x
+    elseif N == 1
         return -2*x^3 + 3*x^2
+    elseif N == 2
+        return 6*x^5 - 15*x^4 + 10*x^3
     end
     S = 0
     for n in 0:N
