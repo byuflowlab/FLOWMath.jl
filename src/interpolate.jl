@@ -355,3 +355,104 @@ function interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, xpt, ypt, zpt, tp
 
     return output
 end
+
+
+import LinearAlgebra
+import StaticArrays
+
+"""
+    CatmullRom(points::Array{Float64, 2})
+Creates a Catmull-Rom spline from the given control points. The points should be
+a 2D array where each row represents a point in space. The function returns a
+CatmullRom object that can be called with a value to evaluate the spline at that point.
+"""
+struct CatmullRom{T} 
+    segments::T
+
+    function CatmullRom(points::Array{TF, 2}) where {TF}
+        segments = build_catmull_rom(points)
+        new{Vector{StaticArrays.SMatrix{4, 2, TF, 8}}}(segments)
+    end
+end
+
+function (c::CatmullRom)(x::Float64)
+    return eval_catmull(c.segments, x)
+end
+
+function centripetal_catmull_rom(P, t, alpha=0.5)
+    # Compute parameter values based on distance
+    function tj(ti, Pi, Pj)
+        return ti + LinearAlgebra.norm(Pj .- Pi)^alpha
+    end
+
+    P0 = view(P, 1, :)
+    P1 = view(P, 2, :)
+    P2 = view(P, 3, :)
+    P3 = view(P, 4, :)
+
+    t0 = 0.0
+    t1 = tj(t0, P0, P1)
+    t2 = tj(t1, P1, P2)
+    t3 = tj(t2, P2, P3)
+
+    # Map t ∈ [0, 1] to t in [t1, t2]
+    t = t1 + t * (t2 - t1)
+
+    # Cubic Lagrange interpolation for centripetal CR spline
+    A1 = ((t1 - t)/(t1 - t0)) .* P0 .+ ((t - t0)/(t1 - t0)) .* P1
+    A2 = ((t2 - t)/(t2 - t1)) .* P1 .+ ((t - t1)/(t2 - t1)) .* P2
+    A3 = ((t3 - t)/(t3 - t2)) .* P2 .+ ((t - t2)/(t3 - t2)) .* P3
+
+    B1 = ((t2 - t)/(t2 - t0)) .* A1 .+ ((t - t0)/(t2 - t0)) .* A2
+    B2 = ((t3 - t)/(t3 - t1)) .* A2 .+ ((t - t1)/(t3 - t1)) .* A3
+
+    C  = ((t2 - t)/(t2 - t1)) .* B1 .+ ((t - t1)/(t2 - t1)) .* B2
+
+    return C
+end
+
+function build_catmull_rom(control_pts)
+    sorted_pts = sortslices(control_pts, dims=1)
+    n, m = size(sorted_pts)
+
+    if n < 2
+        error("Need at least two control points.")
+    end
+
+    # Add phantom endpoints
+    first = view(sorted_pts, 1, :) #[1, 2]
+    second = view(sorted_pts, 2, :)
+    last = view(sorted_pts, n, :)
+    penultimate = view(sorted_pts, n-1, :)
+
+    extended = vcat((2 .* first .- second)', sorted_pts, (2 .* last .- penultimate)')
+
+    TF = typeof(extended[1, 1])
+    segments = Vector{StaticArrays.SMatrix{4, m, TF, 4m}}(undef, n-1)
+    for i in 1:n-1
+        segments[i] = StaticArrays.SMatrix{4,m}(view(extended, i:i+3, :))
+    end
+
+    return segments
+end
+
+function eval_catmull(segments, x; alpha=0.5)
+    # Clamp to range
+    if x <= segments[1][2, 1] #P1, x
+        t = (x - segments[1][2, 1]) / (segments[1][3, 1] - segments[1][2, 1])
+        return centripetal_catmull_rom(segments[1], t, alpha)[2]
+
+    elseif x >= segments[end][3, 1]
+        t = (x - segments[end][2, 1]) / (segments[end][3, 1] - segments[end][2, 1])
+        return centripetal_catmull_rom(segments[end], t, alpha)[2]
+    end
+
+    # Find segment x is in
+    for seg in segments
+        if x >= seg[2, 1] && x <= seg[3, 1]
+            t = (x - seg[2, 1]) / (seg[3, 1] - seg[2, 1])
+            return centripetal_catmull_rom(seg, t, alpha)[2]
+        end
+    end
+end
+
