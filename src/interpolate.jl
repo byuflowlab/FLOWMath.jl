@@ -366,17 +366,23 @@ Creates a Catmull-Rom spline from the given control points. The points should be
 a 2D array where each row represents a point in space. The function returns a
 CatmullRom object that can be called with a value to evaluate the spline at that point.
 """
-struct CatmullRom{T} 
+struct CatmullRom{T, TF} 
     segments::T
+    alpha::TF
 
-    function CatmullRom(points::Array{TF, 2}) where {TF}
+    function CatmullRom(points::Array{TF1, 2}; alpha::TF2=0.5) where {TF1, TF2}
         segments = build_catmull_rom(points)
-        new{Vector{StaticArrays.SMatrix{4, 2, TF, 8}}}(segments)
+        new{Vector{StaticArrays.SMatrix{4, 2, TF1, 8}}, TF2}(segments, alpha)
     end
 end
 
-function (c::CatmullRom)(x::Float64)
-    return eval_catmull(c.segments, x)
+function CatmullRom(x, y; alpha=0.5)
+    points = hcat(x, y)
+    return CatmullRom(points; alpha)
+end
+
+function (c::CatmullRom)(x)
+    return eval_catmull(c.segments, x; alpha=c.alpha)
 end
 
 function centripetal_catmull_rom(P, t, alpha=0.5)
