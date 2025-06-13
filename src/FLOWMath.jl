@@ -7,7 +7,7 @@ export dot_cs_safe
 export atan_cs_safe
 
 include("quadrature.jl")
-export trapz
+export trapz, cumtrapz, cumtrapz!
 
 include("roots.jl")
 export brent
@@ -20,6 +20,7 @@ export sigmoid
 export sigmoid_blend
 export cubic_blend
 export quintic_blend
+export step_smooth
 
 include("interpolate.jl")
 export Akima
@@ -28,6 +29,7 @@ export second_derivative
 export gradient
 export akima
 export linear
+export CatmullRom
 export interp2d
 export interp3d
 export interp4d

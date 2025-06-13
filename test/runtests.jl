@@ -101,7 +101,41 @@ y = sin.(x)
 z = trapz(x, y)
 @test isapprox(z, 1.999835503887444, atol=1e-15)
 
-# -------------------------
+# ------ cumtrapz --------
+# tests from the matlab cumtrapz docs
+# https://www.mathworks.com/help/matlab/ref/cumtrapz.html
+y = Float64[1, 4, 9, 16, 25]
+x = 1:length(y)
+@test all(cumtrapz(x, y) .≈ [0.0, 2.5, 9.0, 21.5, 42.0])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+x = range(0, pi; length=6)
+y = sin.(x)
+@test all(isapprox.(cumtrapz(x, y), [0, 0.1847, 0.6681, 1.2657, 1.7491, 1.9338]; atol=1e-4))
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+x = [1, 2.5, 7, 10]
+y = [5.2, 7.7,  9.6, 13.2]
+@test all(cumtrapz(x, y) .≈ [0, 9.6750, 48.6000, 82.8000])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+y = [4.8, 7.0, 10.5, 14.5]
+@test all(cumtrapz(x, y) .≈ [0, 8.8500, 48.2250, 85.7250])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
+
+y = [4.9, 6.5, 10.2, 13.8]
+@test all(cumtrapz(x, y) .≈ [0, 8.5500, 46.1250, 82.1250])
+out = similar(y)
+cumtrapz!(out, x, y)
+@test all(cumtrapz(x, y) .≈ out)
 
 # ------ Brent's method ------
 
@@ -124,6 +158,21 @@ xstar, _ = brent(f, 1, 4, atol=atol)
 atol = 1e-15
 xstar, _ = brent(f, 1, 4, atol=atol)
 @test isapprox(xstar, pi, atol=atol)
+
+# Test that we can diff through FLOWMath.brent.
+function g(x)
+    # xL and xR need to bracket the root of the function, so may need to adjust if `x0` below is changed.
+    xL, xR = 0.0, 10.0
+    ystar, info = brent(y->cos(y)-x*y, xL, xR)
+    info.flag == "CONVERGED" || error("brent solver failed to converge: info = $info")
+    return sin(ystar) + cos(ystar)^2
+end
+x0 = 3.0
+dfdx_fd = ForwardDiff.derivative(g, x0)
+dfdx_finitediff = FiniteDiff.finite_difference_derivative(g, x0, Val{:forward})
+dfdx_cs = FiniteDiff.finite_difference_derivative(g, x0, Val{:complex})
+@test abs(dfdx_finitediff - dfdx_fd) < 1e-8
+@test abs(dfdx_cs - dfdx_fd) < 1e-12
 
 # -------------------------
 
@@ -210,6 +259,19 @@ x = [0.0, 0.0]
 hardness = 100.0
 x_max_smooth = ksmin(x, hardness)
 @test isapprox(x_max_smooth, -0.006931471805599453)
+
+# Test we can diff through ksmax and ksmin:
+ksmax_wrapper(x) = sin(ksmax(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmax_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmax_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
+
+ksmin_wrapper(x) = sin(ksmin(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmin_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmin_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
 
 # -------------------------
 
@@ -298,6 +360,19 @@ x = [0.165, 0.0]
 smoothing_fraction = 0.2
 x_max_smooth = ksmin_adaptive(x, smoothing_fraction=smoothing_fraction)
 @test isapprox(x_max_smooth, -5.2856933329025475e-6)
+
+# Test we can diff through ksmax_adaptive and ksmin_adaptive:
+ksmax_adaptive_wrapper(x) = sin(ksmax_adaptive(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmax_adaptive_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmax_adaptive_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
+
+ksmin_adaptive_wrapper(x) = sin(ksmin_adaptive(x.^2 .+ 2))
+x0 = [1.0, 1.5, 2.0, 2.5, 3.0]
+g1 = ForwardDiff.gradient(ksmin_adaptive_wrapper, x0)
+g2 = FiniteDiff.finite_difference_gradient(ksmin_adaptive_wrapper, x0, Val(:complex))
+@test maximum(abs.(g2 .- g1)) < 1e-12
 
 # -------------------------
 
@@ -771,6 +846,17 @@ J = ForwardDiff.jacobian(wrapper3, [4.0; 6.0; 8.0])
 wrapper4(t) = interp4d(interp1d, xdata, ydata, zdata, tdata, fdata, 1.0, 2.0, 3.0, t)
 J = ForwardDiff.derivative(wrapper4, 8.0)
 J = ForwardDiff.jacobian(wrapper4, [3.0; 2.0; 1.0])
+# ---------------------------
+
+# ----- Smooth step function -----
+x = [0.0 1.0 2.0]
+y = [0.0, 0.5, 1.0]
+dy = [0.0, 0.9375, 0.0]
+
+for i in eachindex(x)
+    @test step_smooth(x[i], 1.0, 1.0) == y[i]
+    @test ForwardDiff.derivative(x0 -> step_smooth(x0, 1.0, 1.0), x[i]) == dy[i]
+end
 # ---------------------------
 
 end
