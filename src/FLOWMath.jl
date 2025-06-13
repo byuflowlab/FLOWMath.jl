@@ -29,6 +29,7 @@ export second_derivative
 export gradient
 export akima
 export linear
+export CatmullRom
 export interp2d
 export interp3d
 export interp4d

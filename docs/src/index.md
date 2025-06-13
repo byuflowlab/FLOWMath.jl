@@ -231,6 +231,12 @@ interp3d
 interp4d
 ```
 
+### Catmull-Rom Spline
+
+```@docs
+CatmullRom
+```
+
 ## Smoothing
 
 ### Absolute value
