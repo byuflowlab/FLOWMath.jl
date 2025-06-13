@@ -848,4 +848,15 @@ J = ForwardDiff.derivative(wrapper4, 8.0)
 J = ForwardDiff.jacobian(wrapper4, [3.0; 2.0; 1.0])
 # ---------------------------
 
+# ----- Smooth step function -----
+x = [0.0 1.0 2.0]
+y = [0.0, 0.5, 1.0]
+dy = [0.0, 0.9375, 0.0]
+
+for i in eachindex(x)
+    @test step_smooth(x[i], 1.0, 1.0) == y[i]
+    @test ForwardDiff.derivative(x0 -> step_smooth(x0, 1.0, 1.0), x[i]) == dy[i]
+end
+# ---------------------------
+
 end
