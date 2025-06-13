@@ -376,35 +376,6 @@ legend(["f1(x)","f2(x)","cubic", "quintic"])
 savefig("cubic.svg"); nothing # hide
 ```
 
-### Blending a series of functions
-
-Each of the previous function-blending methods can be applied to a series of functions, with transitions from one function to another occuring at specified locations.
-
-```@example vectorblend
-using FLOWMath
-
-x = -1.0:0.001:1.0
-transitions = [-0.6,-0.2,0.2,0.6]
-fvec = [_x->sin(_x),_x->cos(_x),_x->exp(x),_x->x^2,_x->_x]
-
-y_sigmoid = sigmoid_blend(fvec, transitions, x, hardness=50)
-y_cubic = cubic_blend(fvec, transitions, x, delta_x = 0.05)
-y_quintic = quintic_blend(fvec, transitions, x, delta_x = 0.05)
-
-using PyPlot
-figure()
-plot(x,sin.(x))
-plot(x,cos.(x))
-plot(x,exp.(x))
-plot(x,x.^2)
-plot(x,x)
-plot(x, y_sigmoid)
-plot(x, y_cubic)
-plot(x, y_quintic)
-legend(["sin(x)", "cos(x)","exp(x)","x^2","x","sigmoid","cubic","quintic"])
-savefig("vectorblend"); nothing
-```
-
 ![](cubic.svg)
 
 ```@docs
