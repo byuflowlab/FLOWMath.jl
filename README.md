@@ -1,6 +1,6 @@
 # FLOWMath
 
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](http://flow.byu.edu/FLOWMath.jl/dev/)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](http://flow.byu.edu/FLOWMath.jl/dev/)
 ![](https://github.com/byuflowlab/FLOWMath.jl/workflows/Run%20tests/badge.svg)
 
 *A collection of mathematical functions and convenience methods*.  These are simple methods we use regularly in our lab that aren't readily available in the Julia ecosystem.  
@@ -23,6 +23,7 @@ Smoothing
 - Kreisselmeier-Steinhauser constraint aggregation function
 - sigmoid blending
 - cubic/quintic polynomial blending
+- smooth step function
 
 [Complex step safe](https://doi.org/10.1145/838250.838251) versions of
 - `abs`: `abs_cs_safe`

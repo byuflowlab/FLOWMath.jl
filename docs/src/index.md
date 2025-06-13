@@ -381,9 +381,12 @@ savefig("cubic.svg"); nothing # hide
 Each of the previous function-blending methods can be applied to a series of functions, with transitions from one function to another occuring at specified locations.
 
 ```@example vectorblend
+using FLOWMath
+
 x = -1.0:0.001:1.0
 transitions = [-0.6,-0.2,0.2,0.6]
 fvec = [_x->sin(_x),_x->cos(_x),_x->exp(x),_x->x^2,_x->_x]
+
 y_sigmoid = sigmoid_blend(fvec, transitions, x, hardness=50)
 y_cubic = cubic_blend(fvec, transitions, x, delta_x = 0.05)
 y_quintic = quintic_blend(fvec, transitions, x, delta_x = 0.05)
@@ -410,7 +413,7 @@ quintic_blend
 ```
 
 ### Step function
-Step functions are not easily differentiable. The below function smoothly transitions from `y0` to `yf` when `x` equals `x_step`. The transition occurs between `x_step`-`dx` and `x_step`+`dx`. The polynomial used in the transtion of order 2`N`+1.
+Step functions are not easily differentiable. The below function smoothly transitions from `y0` to `yf` when `x` equals `x_step`. The transition occurs between `x_step`-`dx` and `x_step`+`dx`. The polynomial used in the transition is of order 2`N`+1.
 
 ```@setup stepsmooth
 using PyPlot
@@ -438,7 +441,7 @@ savefig("step.svg"); nothing # hide
 step_smooth
 ```
 
-### Complex-step safe functions
+# Complex-step safe functions
 
 The [complex-step derivative approximation](https://doi.org/10.1145/838250.838251) can be used to easily and accurately approximate first derivatives.  This is particularly useful to verify derivatives computed via other means like AD (in contrast to comparing against finite differencing, which suffers from inaccuracies).
 However, the function `f` one wishes to differentiate must be composed of functions that are compatible with the method.
